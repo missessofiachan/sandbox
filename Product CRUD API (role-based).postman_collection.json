@@ -1,0 +1,216 @@
+{
+	"info": {
+		"_postman_id": "product-api-role-based-id",
+		"name": "Product CRUD API (Role-Based)",
+		"description": "Postman collection to test full CRUD for Product API with role-based access.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login as Admin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 200 or 503', function() { pm.expect([200,503]).to.include(pm.response.code); });",
+							"if (pm.response.code === 503) { pm.test('DB unavailable message', function() { var jsonData = pm.response.json(); pm.expect(jsonData.error).to.match(/database unavailable/i); }); } else { var jsonData = pm.response.json(); if (jsonData.token) { pm.environment.set('adminToken', jsonData.token); } }"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [ { "key": "Content-Type", "value": "application/json" } ],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/auth/login",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "auth", "login"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Product (Admin Only)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 201', function() { pm.response.to.have.status(201); });",
+							"var jsonData = pm.response.json();",
+							"pm.environment.set('productId', jsonData._id);"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{adminToken}}" } ],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Test Product\",\n  \"price\": 19.99,\n  \"description\": \"A test product\",\n  \"inStock\": true\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/products",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "products"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Products (Public)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+							"pm.test('Response is JSON array', function() { var jsonData = pm.response.json(); pm.expect(jsonData).to.be.an('array'); });"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/products",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "products"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Product By ID (Public)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+							"pm.test('Response has correct product ID', function() { var jsonData = pm.response.json(); pm.expect(jsonData._id).to.eql(pm.environment.get('productId')); });"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/api/products/{{productId}}",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "products", "{{productId}}"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Product (Admin Only)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+							"pm.test('Name updated correctly', function() { var jsonData = pm.response.json(); pm.expect(jsonData.name).to.eql('Updated Product'); });"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{adminToken}}" } ],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Updated Product\",\n  \"price\": 29.99,\n  \"description\": \"Updated description\",\n  \"inStock\": false\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/products/{{productId}}",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "products", "{{productId}}"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Product (Admin Only)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+							"pm.test('Deletion returns message', function() { var jsonData = pm.response.json(); pm.expect(jsonData.message).to.eql('Product deleted successfully'); });"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [ { "key": "Authorization", "value": "Bearer {{adminToken}}" } ],
+				"url": {
+					"raw": "http://localhost:3000/api/products/{{productId}}",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "products", "{{productId}}"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login as User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 200 or 503', function() { pm.expect([200,503]).to.include(pm.response.code); });",
+							"if (pm.response.code === 503) { pm.test('DB unavailable message', function() { var jsonData = pm.response.json(); pm.expect(jsonData.error).to.match(/database unavailable/i); }); } else { var jsonData = pm.response.json(); if (jsonData.token) { pm.environment.set('userToken', jsonData.token); } }"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [ { "key": "Content-Type", "value": "application/json" } ],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"user123\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/auth/login",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "auth", "login"]
+				}
+			},
+			"response": []
+		}
+	]
+}

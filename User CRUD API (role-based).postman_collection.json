@@ -1,0 +1,214 @@
+{
+	"info": {
+		"_postman_id": "user-api-role-based-id",
+		"name": "User CRUD API (Role-Based)",
+		"description": "Postman collection to test full CRUD for User API with role-based access.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Login as Admin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 200 or 503', function() { pm.expect([200,503]).to.include(pm.response.code); });",
+							"if (pm.response.code === 503) { pm.test('DB unavailable message', function() { var jsonData = pm.response.json(); pm.expect(jsonData.error).to.match(/database unavailable/i); }); } else { var jsonData = pm.response.json(); pm.test('Login successful message', function() { pm.expect(jsonData.message).to.eql('Login successful'); }); if (jsonData.token) { pm.environment.set('adminToken', jsonData.token); } }"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [ { "key": "Content-Type", "value": "application/json" } ],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/auth/login",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "auth", "login"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login as User",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 200 or 503', function() { pm.expect([200,503]).to.include(pm.response.code); });",
+							"if (pm.response.code === 503) { pm.test('DB unavailable message', function() { var jsonData = pm.response.json(); pm.expect(jsonData.error).to.match(/database unavailable/i); }); } else { var jsonData = pm.response.json(); if (jsonData.token) { pm.environment.set('userToken', jsonData.token); } }"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [ { "key": "Content-Type", "value": "application/json" } ],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"user1@example.com\",\n  \"password\": \"userpass\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/auth/login",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "auth", "login"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create User (Public)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 201', function() { pm.response.to.have.status(201); });",
+							"var jsonData = pm.response.json();",
+							"pm.environment.set('userId', jsonData._id);"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [ { "key": "Content-Type", "value": "application/json" } ],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"email\": \"user1@example.com\",\n  \"password\": \"userpass\",\n  \"role\": \"user\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/users",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "users"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Users (Admin Only)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+							"pm.test('Response is JSON array', function() { var jsonData = pm.response.json(); pm.expect(jsonData).to.be.an('array'); });"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [ { "key": "Authorization", "value": "Bearer {{adminToken}}" } ],
+				"url": {
+					"raw": "http://localhost:3000/api/users",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "users"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Users (User Forbidden)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 403', function() { pm.response.to.have.status(403); });",
+							"pm.test('Forbidden error', function() { var jsonData = pm.response.json(); pm.expect(jsonData.error).to.match(/admin access/i); });"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [ { "key": "Authorization", "value": "Bearer {{userToken}}" } ],
+				"url": {
+					"raw": "http://localhost:3000/api/users",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "users"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Logout (Admin)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+							"pm.test('Logout successful message', function() { var jsonData = pm.response.json(); pm.expect(jsonData.message).to.eql('Logout successful'); });",
+							"pm.environment.unset('adminToken');"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [ { "key": "Authorization", "value": "Bearer {{adminToken}}" } ],
+				"url": {
+					"raw": "http://localhost:3000/api/auth/logout",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "auth", "logout"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Logout (User)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+							"pm.test('Logout successful message', function() { var jsonData = pm.response.json(); pm.expect(jsonData.message).to.eql('Logout successful'); });",
+							"pm.environment.unset('userToken');"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [ { "key": "Authorization", "value": "Bearer {{userToken}}" } ],
+				"url": {
+					"raw": "http://localhost:3000/api/auth/logout",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "auth", "logout"]
+				}
+			},
+			"response": []
+		}
+	]
+}
