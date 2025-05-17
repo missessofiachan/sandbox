@@ -6,6 +6,7 @@ import { ProductRepositoryMongo } from '../repositories/ProductRepositoryMongo';
 // import { connectMSSQL } from '../connectMSSQL';
 import { productSchema, productUpdateSchema } from '../validation/productValidation';
 import { asyncHandler, NotFoundError, BadRequestError } from '../middleware/errorHandlerMiddleware';
+import { clearCache, invalidateCache } from '../middleware/cacheMiddleware';
 
 // Initialize with MongoDB repository (SQL disabled)
 const productRepo: IProductRepository = new ProductRepositoryMongo();
@@ -21,6 +22,10 @@ console.log('Using MongoDB for products');
 
 export const createProduct = asyncHandler(async (req: Request, res: Response) => {
   const product = await productRepo.create(req.body);
+  
+  // Invalidate the products list cache
+  invalidateCache('products');
+  
   res.status(201).json(product);
 });
 
@@ -42,6 +47,10 @@ export const updateProduct = asyncHandler(async (req: Request, res: Response) =>
   if (!product) {
     throw new NotFoundError('Product not found');
   }
+  
+  // Invalidate both the list cache and the individual product cache
+  invalidateCache('products', req.params.id);
+  
   res.json(product);
 });
 
@@ -50,6 +59,10 @@ export const partialUpdateProduct = asyncHandler(async (req: Request, res: Respo
   if (!product) {
     throw new NotFoundError('Product not found');
   }
+  
+  // Invalidate both the list cache and the individual product cache
+  invalidateCache('products', req.params.id);
+  
   res.json(product);
 });
 
@@ -58,5 +71,9 @@ export const deleteProduct = asyncHandler(async (req: Request, res: Response) =>
   if (!product) {
     throw new NotFoundError('Product not found');
   }
+  
+  // Invalidate both the list cache and the individual product cache
+  invalidateCache('products', req.params.id);
+  
   res.json({ message: 'Product deleted successfully' });
 });

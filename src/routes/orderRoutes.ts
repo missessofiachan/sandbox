@@ -4,19 +4,29 @@ import * as orderController from '../controllers/orderController';
 import authMiddleware from '../middleware/authMiddleware';
 import validateRequest from '../middleware/validationMiddleware';
 import { orderSchema, orderUpdateSchema } from '../validation/orderValidation';
+import cacheResponse from '../middleware/cacheMiddleware';
+
+// Get cache duration from environment variables or use defaults
+const ORDERS_CACHE_DURATION = Number(process.env.ORDERS_CACHE_DURATION) || 120; // 2 minutes
+const ORDER_CACHE_DURATION = Number(process.env.CACHE_DURATION) || 60; // 1 minute
 
 const router = express.Router();
 
 // Create a new order (authenticated user)
 router.post('/', authMiddleware, validateRequest(orderSchema), orderController.createOrder);
-// Get all orders (admin only)
-router.get('/', authMiddleware, orderController.getAllOrders);
-// Get a single order by ID (authenticated user)
-router.get('/:id', authMiddleware, orderController.getOrderById);
+
+// Get all orders (admin only) - cached for 2 minutes
+router.get('/', authMiddleware, cacheResponse(ORDERS_CACHE_DURATION), orderController.getAllOrders);
+
+// Get a single order by ID (authenticated user) - cached for 1 minute
+router.get('/:id', authMiddleware, cacheResponse(ORDER_CACHE_DURATION), orderController.getOrderById);
+
 // Update an order by ID (admin only)
 router.put('/:id', authMiddleware, validateRequest(orderSchema), orderController.updateOrder);
+
 // Partially update an order by ID (admin only)
 router.patch('/:id', authMiddleware, validateRequest(orderUpdateSchema), orderController.partialUpdateOrder);
+
 // Delete an order by ID (admin only)
 router.delete('/:id', authMiddleware, orderController.deleteOrder);
 

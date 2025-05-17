@@ -4,9 +4,14 @@ import Order from '../models/Order';
 import { IOrder } from '../types';
 import { orderSchema, orderUpdateSchema } from '../validation/orderValidation';
 import { asyncHandler, NotFoundError, BadRequestError } from '../middleware/errorHandlerMiddleware';
+import { clearCache, invalidateCache } from '../middleware/cacheMiddleware';
 
 export const createOrder = asyncHandler(async (req: Request, res: Response) => {
   const order = await Order.create(req.body);
+  
+  // Invalidate orders list cache
+  invalidateCache('orders');
+  
   res.status(201).json(order);
 });
 
@@ -28,6 +33,10 @@ export const updateOrder = asyncHandler(async (req: Request, res: Response) => {
   if (!order) {
     throw new NotFoundError('Order not found');
   }
+  
+  // Invalidate both the list cache and the individual order cache
+  invalidateCache('orders', req.params.id);
+  
   res.json(order);
 });
 
@@ -36,6 +45,10 @@ export const partialUpdateOrder = asyncHandler(async (req: Request, res: Respons
   if (!order) {
     throw new NotFoundError('Order not found');
   }
+  
+  // Invalidate both the list cache and the individual order cache
+  invalidateCache('orders', req.params.id);
+  
   res.json(order);
 });
 
@@ -44,5 +57,9 @@ export const deleteOrder = asyncHandler(async (req: Request, res: Response) => {
   if (!order) {
     throw new NotFoundError('Order not found');
   }
+  
+  // Invalidate both the list cache and the individual order cache
+  invalidateCache('orders', req.params.id);
+  
   res.json({ message: 'Order deleted successfully' });
 });

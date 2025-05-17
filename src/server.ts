@@ -13,6 +13,7 @@ import authRoutes from './routes/authRoutes';
 import productRoutes from './routes/productRoutes';
 import orderRoutes from './routes/orderRoutes';
 import userRoutes from './routes/userRoutes';
+import cacheRoutes from './routes/cacheRoutes';
 import corsMiddleware from './middleware/corsMiddleware';
 import { errorHandler, notFoundHandler } from './middleware/errorHandlerMiddleware';
 
@@ -66,6 +67,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 // Setting up routes for user-related operations
 app.use('/api/users', userRoutes);
+// Setting up routes for cache management
+app.use('/api/cache', cacheRoutes);
 // Setting up routes for serving pages (should be last)
 app.use('/', pageRoutes);
 
