@@ -10,7 +10,6 @@ interface TokenUser {
     email?: string;
 }
 
-// Improved: Do not include password in token payload, use env SECRET_KEY, add user id if available
 const createToken = (user: TokenUser | IUser): string => {
     // Build payload with username and optional id
     const payload = {
@@ -22,8 +21,8 @@ const createToken = (user: TokenUser | IUser): string => {
     // Use SECRET_KEY from .env, fallback to 'defaultsecret' if not set
     const secret = process.env.SECRET_KEY || 'defaultsecret';
     const options = {
-        expiresIn: '1h' as StringValue,
-        algorithm: 'HS256' as const,
+        expiresIn: (process.env.JWT_EXPIRES_IN as StringValue) || '1h',
+        algorithm: (process.env.JWT_ALGORITHM as jwt.Algorithm) || 'HS256',
     };
 
     // Sign and return the JWT

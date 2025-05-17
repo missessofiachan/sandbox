@@ -6,7 +6,7 @@ import createToken from '../middleware/createTokenMiddleware';
 import User from '../models/User';
 import bcrypt from 'bcrypt';
 
-// Simple in-memory queue for failed login attempts (for demo; use Redis or persistent queue in production)
+// Simple in-memory queue for failed login attempts 
 const failedLoginQueue: Array<{ email: string; password: string; timestamp: number }> = [];
 
 function isDbError(err: any): boolean {
@@ -51,7 +51,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.json({ message: 'Login successful', token });
   } catch (err: any) {
     if (isDbError(err)) {
-      // Queue login attempt for retry (in-memory, demo only)
+      // Queue login attempt for retry 
       failedLoginQueue.push({ email, password, timestamp: Date.now() });
       res.status(503).json({ error: 'Database unavailable. Your login request has been queued and will be retried.' });
     } else {
@@ -63,3 +63,4 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 export const logout = (_req: Request, res: Response): void => {
   res.json({ message: 'Logout successful' });
 };
+ 

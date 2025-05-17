@@ -6,7 +6,7 @@ const corsMiddleware = (): RequestHandler => {
     // Use the cors package for all routes
     return (req, res, next) => {
         cors({
-            origin: '*', // Allow all origins (customize as needed)
+            origin: process.env.CORS_ORIGIN || '*', // Use env var for allowed origins
             methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
             allowedHeaders: ['Content-Type', 'Authorization'],
             credentials: false,
