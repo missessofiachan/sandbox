@@ -19,15 +19,7 @@ console.log('Using MongoDB for products');
 // });
 
 export const createProduct = async (req: Request, res: Response): Promise<void> => {
-  // Validate request body
-  const { error } = productSchema.validate(req.body, { abortEarly: false });
-  if (error) {
-    res.status(400).json({
-      error: 'Validation failed',
-      details: error.details.map(d => ({ message: d.message, path: d.path }))
-    });
-    return;
-  }
+  // Validation is now handled by middleware
   try {
     const product = await productRepo.create(req.body);
     res.status(201).json(product);
@@ -59,15 +51,7 @@ export const getProductById = async (req: Request, res: Response): Promise<void>
 };
 
 export const updateProduct = async (req: Request, res: Response): Promise<void> => {
-  // Validate request body
-  const { error } = productSchema.validate(req.body, { abortEarly: false });
-  if (error) {
-    res.status(400).json({
-      error: 'Validation failed',
-      details: error.details.map(d => ({ message: d.message, path: d.path }))
-    });
-    return;
-  }
+  // Validation is now handled by middleware
   try {
     const product = await productRepo.update(req.params.id, req.body);
     if (!product) {
@@ -81,15 +65,7 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
 };
 
 export const partialUpdateProduct = async (req: Request, res: Response): Promise<void> => {
-  // Validate request body
-  const { error } = productUpdateSchema.validate(req.body, { abortEarly: false });
-  if (error) {
-    res.status(400).json({
-      error: 'Validation failed',
-      details: error.details.map(d => ({ message: d.message, path: d.path }))
-    });
-    return;
-  }
+  // Validation is now handled by middleware
   try {
     const product = await productRepo.partialUpdate(req.params.id, req.body);
     if (!product) {

@@ -5,15 +5,7 @@ import { IOrder } from '../types';
 import { orderSchema, orderUpdateSchema } from '../validation/orderValidation';
 
 export const createOrder = async (req: Request, res: Response): Promise<void> => {
-  // Validate request body
-  const { error } = orderSchema.validate(req.body, { abortEarly: false });
-  if (error) {
-    res.status(400).json({
-      error: 'Validation failed',
-      details: error.details.map(d => ({ message: d.message, path: d.path }))
-    });
-    return;
-  }
+  // Validation is now handled by middleware
   try {
     const order = await Order.create(req.body);
     res.status(201).json(order);
@@ -45,15 +37,7 @@ export const getOrderById = async (req: Request, res: Response): Promise<void> =
 };
 
 export const updateOrder = async (req: Request, res: Response): Promise<void> => {
-  // Validate request body
-  const { error } = orderSchema.validate(req.body, { abortEarly: false });
-  if (error) {
-    res.status(400).json({
-      error: 'Validation failed',
-      details: error.details.map(d => ({ message: d.message, path: d.path }))
-    });
-    return;
-  }
+  // Validation is now handled by middleware
   try {
     const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
     if (!order) {
@@ -67,15 +51,7 @@ export const updateOrder = async (req: Request, res: Response): Promise<void> =>
 };
 
 export const partialUpdateOrder = async (req: Request, res: Response): Promise<void> => {
-  // Validate request body
-  const { error } = orderUpdateSchema.validate(req.body, { abortEarly: false });
-  if (error) {
-    res.status(400).json({
-      error: 'Validation failed',
-      details: error.details.map(d => ({ message: d.message, path: d.path }))
-    });
-    return;
-  }
+  // Validation is now handled by middleware
   try {
     const order = await Order.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true, runValidators: true });
     if (!order) {

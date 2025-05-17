@@ -3,18 +3,9 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import User from '../models/User';
 import { IUserModel } from '../models/User';
-import { userLoginSchema } from '../validation/userValidation';
 
 export const createUser = async (req: Request, res: Response): Promise<void> => {
-  // Validate request body
-  const { error } = userLoginSchema.validate(req.body, { abortEarly: false });
-  if (error) {
-    res.status(400).json({
-      error: 'Validation failed',
-      details: error.details.map(d => ({ message: d.message, path: d.path }))
-    });
-    return;
-  }
+  // Validation is now handled by middleware
   try {
     // Check if user already exists
     const existing = await User.findOne({ email: req.body.email });
@@ -54,15 +45,7 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
 };
 
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
-  // Validate request body
-  const { error } = userLoginSchema.validate(req.body, { abortEarly: false });
-  if (error) {
-    res.status(400).json({
-      error: 'Validation failed',
-      details: error.details.map(d => ({ message: d.message, path: d.path }))
-    });
-    return;
-  }
+  // Validation is now handled by middleware
   try {
     // Hash password if present
     let updateData = { ...req.body };
@@ -81,16 +64,7 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
 };
 
 export const partialUpdateUser = async (req: Request, res: Response): Promise<void> => {
-  // Validate request body (allow partial fields)
-  const partialSchema = userLoginSchema.fork(['email', 'password', 'role'], s => s.optional()).min(1);
-  const { error } = partialSchema.validate(req.body, { abortEarly: false });
-  if (error) {
-    res.status(400).json({
-      error: 'Validation failed',
-      details: error.details.map(d => ({ message: d.message, path: d.path }))
-    });
-    return;
-  }
+  // Validation is now handled by middleware
   try {
     let updateData = { ...req.body };
     if (updateData.password) {

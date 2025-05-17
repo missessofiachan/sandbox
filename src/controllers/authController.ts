@@ -21,12 +21,7 @@ function isDbError(err: any): boolean {
 }
 
 export const login = async (req: Request, res: Response): Promise<void> => {
-  // Validate request body using Joi schema
-  const { error } = userLoginSchema.validate(req.body);
-  if (error) {
-    res.status(400).json({ error: error.details[0].message });
-    return;
-  }
+  // No need to validate here since it's handled by the middleware
   const { email, password } = req.body;
   try {
     // Find user in DB
@@ -63,4 +58,3 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 export const logout = (_req: Request, res: Response): void => {
   res.json({ message: 'Logout successful' });
 };
- 
