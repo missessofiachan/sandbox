@@ -14,6 +14,7 @@ import productRoutes from './routes/productRoutes';
 import orderRoutes from './routes/orderRoutes';
 import userRoutes from './routes/userRoutes';
 import corsMiddleware from './middleware/corsMiddleware';
+import { errorHandler, notFoundHandler } from './middleware/errorHandlerMiddleware';
 
 // Load environment variables
 dotenv.config();
@@ -67,6 +68,12 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
 // Setting up routes for serving pages (should be last)
 app.use('/', pageRoutes);
+
+// Handle 404 errors for undefined routes
+app.use(notFoundHandler);
+
+// Global error handler - should be last middleware
+app.use(errorHandler);
 
 // Starting the server
 const PORT: number = Number(process.env.PORT) || 3000;

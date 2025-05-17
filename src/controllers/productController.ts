@@ -1,10 +1,11 @@
 // Controller for Product resource
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import IProductRepository from '../repositories/IProductRepository';
 import { ProductRepositoryMongo } from '../repositories/ProductRepositoryMongo';
 // import { ProductRepositoryMSSQL } from '../repositories/ProductRepositoryMSSQL';
 // import { connectMSSQL } from '../connectMSSQL';
 import { productSchema, productUpdateSchema } from '../validation/productValidation';
+import { asyncHandler, NotFoundError, BadRequestError } from '../middleware/errorHandlerMiddleware';
 
 // Initialize with MongoDB repository (SQL disabled)
 const productRepo: IProductRepository = new ProductRepositoryMongo();
@@ -18,75 +19,44 @@ console.log('Using MongoDB for products');
 //   console.error('MSSQL connection failed:', err);
 // });
 
-export const createProduct = async (req: Request, res: Response): Promise<void> => {
-  // Validation is now handled by middleware
-  try {
-    const product = await productRepo.create(req.body);
-    res.status(201).json(product);
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
-  }
-};
+export const createProduct = asyncHandler(async (req: Request, res: Response) => {
+  const product = await productRepo.create(req.body);
+  res.status(201).json(product);
+});
 
-export const getAllProducts = async (_req: Request, res: Response): Promise<void> => {
-  try {
-    const products = await productRepo.findAll();
-    res.json(products);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
+export const getAllProducts = asyncHandler(async (_req: Request, res: Response) => {
+  const products = await productRepo.findAll();
+  res.json(products);
+});
 
-export const getProductById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const product = await productRepo.findById(req.params.id);
-    if (!product) {
-      res.status(404).json({ error: 'Product not found' });
-      return;
-    }
-    res.json(product);
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+export const getProductById = asyncHandler(async (req: Request, res: Response) => {
+  const product = await productRepo.findById(req.params.id);
+  if (!product) {
+    throw new NotFoundError('Product not found');
   }
-};
+  res.json(product);
+});
 
-export const updateProduct = async (req: Request, res: Response): Promise<void> => {
-  // Validation is now handled by middleware
-  try {
-    const product = await productRepo.update(req.params.id, req.body);
-    if (!product) {
-      res.status(404).json({ error: 'Product not found' });
-      return;
-    }
-    res.json(product);
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+export const updateProduct = asyncHandler(async (req: Request, res: Response) => {
+  const product = await productRepo.update(req.params.id, req.body);
+  if (!product) {
+    throw new NotFoundError('Product not found');
   }
-};
+  res.json(product);
+});
 
-export const partialUpdateProduct = async (req: Request, res: Response): Promise<void> => {
-  // Validation is now handled by middleware
-  try {
-    const product = await productRepo.partialUpdate(req.params.id, req.body);
-    if (!product) {
-      res.status(404).json({ error: 'Product not found' });
-      return;
-    }
-    res.json(product);
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+export const partialUpdateProduct = asyncHandler(async (req: Request, res: Response) => {
+  const product = await productRepo.partialUpdate(req.params.id, req.body);
+  if (!product) {
+    throw new NotFoundError('Product not found');
   }
-};
+  res.json(product);
+});
 
-export const deleteProduct = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const product = await productRepo.delete(req.params.id);
-    if (!product) {
-      res.status(404).json({ error: 'Product not found' });
-      return;
-    }
-    res.json({ message: 'Product deleted successfully' });
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+export const deleteProduct = asyncHandler(async (req: Request, res: Response) => {
+  const product = await productRepo.delete(req.params.id);
+  if (!product) {
+    throw new NotFoundError('Product not found');
   }
-};
+  res.json({ message: 'Product deleted successfully' });
+});

@@ -3,76 +3,46 @@ import { Request, Response } from 'express';
 import Order from '../models/Order';
 import { IOrder } from '../types';
 import { orderSchema, orderUpdateSchema } from '../validation/orderValidation';
+import { asyncHandler, NotFoundError, BadRequestError } from '../middleware/errorHandlerMiddleware';
 
-export const createOrder = async (req: Request, res: Response): Promise<void> => {
-  // Validation is now handled by middleware
-  try {
-    const order = await Order.create(req.body);
-    res.status(201).json(order);
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
-  }
-};
+export const createOrder = asyncHandler(async (req: Request, res: Response) => {
+  const order = await Order.create(req.body);
+  res.status(201).json(order);
+});
 
-export const getAllOrders = async (_req: Request, res: Response): Promise<void> => {
-  try {
-    const orders: IOrder[] = await Order.find().populate('products');
-    res.json(orders);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-};
+export const getAllOrders = asyncHandler(async (_req: Request, res: Response) => {
+  const orders: IOrder[] = await Order.find().populate('products');
+  res.json(orders);
+});
 
-export const getOrderById = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const order = await Order.findById(req.params.id).populate('products');
-    if (!order) {
-      res.status(404).json({ error: 'Order not found' });
-      return;
-    }
-    res.json(order);
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+export const getOrderById = asyncHandler(async (req: Request, res: Response) => {
+  const order = await Order.findById(req.params.id).populate('products');
+  if (!order) {
+    throw new NotFoundError('Order not found');
   }
-};
+  res.json(order);
+});
 
-export const updateOrder = async (req: Request, res: Response): Promise<void> => {
-  // Validation is now handled by middleware
-  try {
-    const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
-    if (!order) {
-      res.status(404).json({ error: 'Order not found' });
-      return;
-    }
-    res.json(order);
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+export const updateOrder = asyncHandler(async (req: Request, res: Response) => {
+  const order = await Order.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+  if (!order) {
+    throw new NotFoundError('Order not found');
   }
-};
+  res.json(order);
+});
 
-export const partialUpdateOrder = async (req: Request, res: Response): Promise<void> => {
-  // Validation is now handled by middleware
-  try {
-    const order = await Order.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true, runValidators: true });
-    if (!order) {
-      res.status(404).json({ error: 'Order not found' });
-      return;
-    }
-    res.json(order);
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+export const partialUpdateOrder = asyncHandler(async (req: Request, res: Response) => {
+  const order = await Order.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true, runValidators: true });
+  if (!order) {
+    throw new NotFoundError('Order not found');
   }
-};
+  res.json(order);
+});
 
-export const deleteOrder = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const order = await Order.findByIdAndDelete(req.params.id);
-    if (!order) {
-      res.status(404).json({ error: 'Order not found' });
-      return;
-    }
-    res.json({ message: 'Order deleted successfully' });
-  } catch (error: any) {
-    res.status(400).json({ error: error.message });
+export const deleteOrder = asyncHandler(async (req: Request, res: Response) => {
+  const order = await Order.findByIdAndDelete(req.params.id);
+  if (!order) {
+    throw new NotFoundError('Order not found');
   }
-};
+  res.json({ message: 'Order deleted successfully' });
+});

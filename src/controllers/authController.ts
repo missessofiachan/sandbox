@@ -5,6 +5,7 @@ import { userLoginSchema } from '../validation/userValidation';
 import createToken from '../middleware/createTokenMiddleware';
 import User from '../models/User';
 import bcrypt from 'bcrypt';
+import { asyncHandler, UnauthorizedError, BadRequestError, ServiceUnavailableError } from '../middleware/errorHandlerMiddleware';
 
 // Simple in-memory queue for failed login attempts 
 const failedLoginQueue: Array<{ email: string; password: string; timestamp: number }> = [];
@@ -20,22 +21,22 @@ function isDbError(err: any): boolean {
   );
 }
 
-export const login = async (req: Request, res: Response): Promise<void> => {
-  // No need to validate here since it's handled by the middleware
+export const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
+  
   try {
     // Find user in DB
     const user = await User.findOne({ email });
     if (!user) {
-      res.status(401).json({ error: 'Invalid username or password' });
-      return;
+      throw new UnauthorizedError('Invalid username or password');
     }
+    
     // Compare password
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
-      res.status(401).json({ error: 'Invalid username or password' });
-      return;
+      throw new UnauthorizedError('Invalid username or password');
     }
+    
     // Issue JWT
     const token = createToken({
       email: user.email,
@@ -43,18 +44,19 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       role: user.role,
       id: (user._id as string | undefined) || user.id || ''
     });
+    
     res.json({ message: 'Login successful', token });
-  } catch (err: any) {
+  } catch (err) {
+    // Special handling for DB errors
     if (isDbError(err)) {
       // Queue login attempt for retry 
       failedLoginQueue.push({ email, password, timestamp: Date.now() });
-      res.status(503).json({ error: 'Database unavailable. Your login request has been queued and will be retried.' });
-    } else {
-      res.status(500).json({ error: err.message || 'Internal server error' });
+      throw new ServiceUnavailableError('Database unavailable. Your login request has been queued and will be retried.');
     }
+    throw err; // Let other errors be handled by the global error handler
   }
-};
+});
 
-export const logout = (_req: Request, res: Response): void => {
+export const logout = asyncHandler(async (_req: Request, res: Response) => {
   res.json({ message: 'Logout successful' });
-};
+});

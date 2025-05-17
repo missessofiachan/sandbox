@@ -1,6 +1,7 @@
 // Middleware for centralizing Joi validation across routes
 import { Request, Response, NextFunction } from 'express';
 import { Schema } from 'joi';
+import { BadRequestError } from './errorHandlerMiddleware';
 
 /**
  * Creates a middleware function that validates request data against a Joi schema
@@ -23,10 +24,7 @@ export const validateRequest = (schema: Schema, property: 'body' | 'params' | 'q
         path: detail.path
       }));
       
-      res.status(400).json({
-        error: 'Validation failed',
-        details
-      });
+      next(new BadRequestError('Validation failed').withDetails(details));
     }
   };
 };
