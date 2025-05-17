@@ -7,6 +7,7 @@ import express, { Application } from 'express';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import path from 'path';
+import rateLimit from 'express-rate-limit';
 import pageRoutes from './routes/pageRoutes';
 import authRoutes from './routes/authRoutes';
 import productRoutes from './routes/productRoutes';
@@ -36,6 +37,15 @@ try {
 // Initializing the Express application
 const app: Application = express();
 
+// Configure rate limiting middleware
+const apiLimiter = rateLimit({
+    windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
+    max: Number(process.env.RATE_LIMIT_MAX) || 100, // limit each IP to 100 requests per windowMs
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    message: { error: 'Too many requests from this IP, please try again after 15 minutes' }
+});
+
 // Middleware to parse incoming JSON requests
 app.use(express.json());
 // Serve static files (CSS, JS)
@@ -43,6 +53,9 @@ app.use(express.static(path.join(__dirname, '..')));
 
 // Enable CORS and handle OPTIONS pre-flight requests
 app.use(corsMiddleware());
+
+// Apply rate limiting to all API routes
+app.use('/api', apiLimiter);
 
 // Setting up routes for authentication
 app.use('/api/auth', authRoutes);
