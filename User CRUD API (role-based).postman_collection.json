@@ -109,7 +109,9 @@
 						"type": "text/javascript",
 						"exec": [
 							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
-							"pm.test('Response is JSON array', function() { var jsonData = pm.response.json(); pm.expect(jsonData).to.be.an('array'); });"
+							"pm.test('Response is JSON array', function() { var jsonData = pm.response.json(); pm.expect(jsonData).to.be.an('array'); });",
+							"pm.test('Cache header is present', function() { pm.expect(pm.response.headers.has('X-Cache')).to.be.true; });",
+							"pm.test('Cache-Control header is present', function() { pm.expect(pm.response.headers.has('Cache-Control')).to.be.true; });"
 						]
 					}
 				}
@@ -180,8 +182,7 @@
 					"path": ["api", "auth", "logout"]
 				}
 			},
-			"response": []
-		},
+			"response": []		},
 		{
 			"name": "Logout (User)",
 			"event": [
@@ -206,6 +207,128 @@
 					"host": ["localhost"],
 					"port": "3000",
 					"path": ["api", "auth", "logout"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User by ID (Admin Only)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+							"pm.test('Response is a valid user object', function() { var jsonData = pm.response.json(); pm.expect(jsonData).to.be.an('object'); pm.expect(jsonData).to.have.property('_id'); pm.expect(jsonData).to.have.property('email'); });"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [ { "key": "Authorization", "value": "Bearer {{adminToken}}" } ],
+				"url": {
+					"raw": "http://localhost:3000/api/users/{{userId}}",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "users", "{{userId}}"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update User (Admin Only)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+							"pm.test('Response contains updated data', function() { var jsonData = pm.response.json(); pm.expect(jsonData.name).to.eql('Updated User Name'); });"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [ 
+					{ "key": "Content-Type", "value": "application/json" },
+					{ "key": "Authorization", "value": "Bearer {{adminToken}}" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Updated User Name\",\n  \"email\": \"user1updated@example.com\",\n  \"role\": \"user\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/users/{{userId}}",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "users", "{{userId}}"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Partial Update User (Admin Only)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+							"pm.test('Response contains partially updated data', function() { var jsonData = pm.response.json(); pm.expect(jsonData.name).to.eql('Partially Updated Name'); });"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [ 
+					{ "key": "Content-Type", "value": "application/json" },
+					{ "key": "Authorization", "value": "Bearer {{adminToken}}" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Partially Updated Name\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:3000/api/users/{{userId}}",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "users", "{{userId}}"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete User (Admin Only)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+							"pm.test('User deleted successful message', function() { var jsonData = pm.response.json(); pm.expect(jsonData.message).to.match(/deleted successfully/i); });"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [ { "key": "Authorization", "value": "Bearer {{adminToken}}" } ],
+				"url": {
+					"raw": "http://localhost:3000/api/users/{{userId}}",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "users", "{{userId}}"]
 				}
 			},
 			"response": []

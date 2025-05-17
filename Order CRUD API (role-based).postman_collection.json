@@ -78,7 +78,9 @@
 						"type": "text/javascript",
 						"exec": [
 							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
-							"pm.test('Response is JSON array', function() { var jsonData = pm.response.json(); pm.expect(jsonData).to.be.an('array'); });"
+							"pm.test('Response is JSON array', function() { var jsonData = pm.response.json(); pm.expect(jsonData).to.be.an('array'); });",
+							"pm.test('Cache header is present', function() { pm.expect(pm.response.headers.has('X-Cache')).to.be.true; });",
+							"pm.test('Cache-Control header is present', function() { pm.expect(pm.response.headers.has('Cache-Control')).to.be.true; });"
 						]
 					}
 				}
@@ -105,7 +107,9 @@
 						"type": "text/javascript",
 						"exec": [
 							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
-							"pm.test('Order has correct ID', function() { var jsonData = pm.response.json(); pm.expect(jsonData._id).to.eql(pm.environment.get('orderId')); });"
+							"pm.test('Order has correct ID', function() { var jsonData = pm.response.json(); pm.expect(jsonData._id).to.eql(pm.environment.get('orderId')); });",
+							"pm.test('Cache header is present', function() { pm.expect(pm.response.headers.has('X-Cache')).to.be.true; });",
+							"pm.test('Cache-Control header is present', function() { pm.expect(pm.response.headers.has('Cache-Control')).to.be.true; });"
 						]
 					}
 				}
@@ -132,7 +136,20 @@
 						"type": "text/javascript",
 						"exec": [
 							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
-							"pm.test('Order status updated', function() { var jsonData = pm.response.json(); pm.expect(jsonData.status).to.eql('completed'); });"
+							"pm.test('Order status updated', function() { var jsonData = pm.response.json(); pm.expect(jsonData.status).to.eql('completed'); });",
+							"",
+							"// Test cache invalidation by making a GET request after update",
+							"setTimeout(() => {",
+							"    pm.sendRequest({",
+							"        url: `http://localhost:3000/api/orders/${pm.environment.get('orderId')}`,",
+							"        method: 'GET',",
+							"        header: {'Authorization': `Bearer ${pm.environment.get('userToken')}`}",
+							"    }, function (err, res) {",
+							"        pm.test('GET after update shows cache MISS', function() {",
+							"            pm.expect(res.headers.get('X-Cache')).to.eql('MISS');",
+							"        });",
+							"    });",
+							"}, 100);"
 						]
 					}
 				}
@@ -177,6 +194,61 @@
 					"host": ["localhost"],
 					"port": "3000",
 					"path": ["api", "orders", "{{orderId}}"]
+				}			},
+			"response": []
+		},
+		{
+			"name": "Get Cache Statistics (Admin Only)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+							"pm.test('Cache stats include hits', function() { var jsonData = pm.response.json(); pm.expect(jsonData.hits).to.be.a('number'); });",
+							"pm.test('Cache stats include misses', function() { var jsonData = pm.response.json(); pm.expect(jsonData.misses).to.be.a('number'); });",
+							"pm.test('Cache stats include size', function() { var jsonData = pm.response.json(); pm.expect(jsonData.sizeInMB).to.be.a('number'); });"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [ { "key": "Authorization", "value": "Bearer {{adminToken}}" } ],
+				"url": {
+					"raw": "http://localhost:3000/api/cache/stats",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "cache", "stats"]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Clear Cache (Admin Only)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+							"pm.test('Cache cleared message', function() { var jsonData = pm.response.json(); pm.expect(jsonData.message).to.match(/cleared/i); });"
+						]
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [ { "key": "Authorization", "value": "Bearer {{adminToken}}" } ],
+				"url": {
+					"raw": "http://localhost:3000/api/cache",
+					"protocol": "http",
+					"host": ["localhost"],
+					"port": "3000",
+					"path": ["api", "cache"]
 				}
 			},
 			"response": []
