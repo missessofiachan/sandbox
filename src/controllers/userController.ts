@@ -8,23 +8,35 @@ import UserRepositoryMSSQL from '../repositories/UserRepositoryMSSQL';
 import { connectMSSQL } from '../connectMSSQL';
 
 // Dynamic repository selection based on DB_TYPE
+import { logger } from '../utils/logger';
+
+function getUserRepo(): IUserRepository {
+  if (process.env.DB_TYPE === 'mssql') {
+    try {
+      return new UserRepositoryMSSQL();
+    } catch (err) {
+      logger.error(`MSSQL user repository initialization failed: ${err}`);
+      logger.info('Falling back to MongoDB user repository');
+      return new UserRepositoryMongo();
+    }
+  } else {
+    return new UserRepositoryMongo();
+  }
+}
+
+// Initialize repository lazily to ensure database connection is established first
 let userRepo: IUserRepository;
-if (process.env.DB_TYPE === 'mssql') {
-  connectMSSQL().then(() => {
-    userRepo = new UserRepositoryMSSQL();
-    console.log('Connected to MSSQL and using UserRepositoryMSSQL');
-  }).catch(err => {
-    console.error('MSSQL connection failed:', err);
-    userRepo = new UserRepositoryMongo(); // fallback to Mongo
-  });
-} else {
-  userRepo = new UserRepositoryMongo();
-  console.log('Using MongoDB for users');
+
+function getRepository(): IUserRepository {
+  if (!userRepo) {
+    userRepo = getUserRepo();
+  }
+  return userRepo;
 }
 
 export const createUser = asyncHandler(async (req: Request, res: Response) => {
   // Check if user already exists
-  const existing = await userRepo.findByEmail(req.body.email);
+  const existing = await getRepository().findByEmail(req.body.email);
   if (existing) {
     throw new BadRequestError('User already exists').withDetails({
       field: 'email',
@@ -33,17 +45,17 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
   }
   // Hash password before saving
   const hashedPassword = await bcrypt.hash(req.body.password, 10);
-  const user = await userRepo.create({ ...req.body, password: hashedPassword });
+  const user = await getRepository().create({ ...req.body, password: hashedPassword });
   res.status(201).json(user);
 });
 
 export const getAllUsers = asyncHandler(async (_req: Request, res: Response) => {
-  const users = await userRepo.findAll();
+  const users = await getRepository().findAll();
   res.json(users);
 });
 
 export const getUserById = asyncHandler(async (req: Request, res: Response) => {
-  const user = await userRepo.findById(req.params.id);
+  const user = await getRepository().findById(req.params.id);
   if (!user) {
     throw new NotFoundError('User not found');
   }
@@ -56,7 +68,7 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
   if (updateData.password) {
     updateData.password = await bcrypt.hash(updateData.password, 10);
   }
-  const user = await userRepo.update(req.params.id, updateData);
+  const user = await getRepository().update(req.params.id, updateData);
   if (!user) {
     throw new NotFoundError('User not found');
   }
@@ -68,7 +80,7 @@ export const partialUpdateUser = asyncHandler(async (req: Request, res: Response
   if (updateData.password) {
     updateData.password = await bcrypt.hash(updateData.password, 10);
   }
-  const user = await userRepo.partialUpdate(req.params.id, updateData);
+  const user = await getRepository().partialUpdate(req.params.id, updateData);
   if (!user) {
     throw new NotFoundError('User not found');
   }
@@ -76,7 +88,7 @@ export const partialUpdateUser = asyncHandler(async (req: Request, res: Response
 });
 
 export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
-  const user = await userRepo.delete(req.params.id);
+  const user = await getRepository().delete(req.params.id);
   if (!user) {
     throw new NotFoundError('User not found');
   }

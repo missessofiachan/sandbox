@@ -10,22 +10,34 @@ import { asyncHandler, NotFoundError, BadRequestError } from '../middleware/erro
 import { clearCache, invalidateCache } from '../middleware/cacheMiddleware';
 
 // Dynamic repository selection based on DB_TYPE
+import { logger } from '../utils/logger';
+
+function getOrderRepo(): IOrderRepository {
+  if (process.env.DB_TYPE === 'mssql') {
+    try {
+      return new OrderRepositoryMSSQL();
+    } catch (err) {
+      logger.error(`MSSQL order repository initialization failed: ${err}`);
+      logger.info('Falling back to MongoDB order repository');
+      return new OrderRepositoryMongo();
+    }
+  } else {
+    return new OrderRepositoryMongo();
+  }
+}
+
+// Initialize repository lazily to ensure database connection is established first
 let orderRepo: IOrderRepository;
-if (process.env.DB_TYPE === 'mssql') {
-  connectMSSQL().then(() => {
-    orderRepo = new OrderRepositoryMSSQL();
-    console.log('Connected to MSSQL and using OrderRepositoryMSSQL');
-  }).catch(err => {
-    console.error('MSSQL connection failed:', err);
-    orderRepo = new OrderRepositoryMongo(); // fallback to Mongo
-  });
-} else {
-  orderRepo = new OrderRepositoryMongo();
-  console.log('Using MongoDB for orders');
+
+function getRepository(): IOrderRepository {
+  if (!orderRepo) {
+    orderRepo = getOrderRepo();
+  }
+  return orderRepo;
 }
 
 export const createOrder = asyncHandler(async (req: Request, res: Response) => {
-  const order = await orderRepo.create(req.body);
+  const order = await getRepository().create(req.body);
   
   // Invalidate orders list cache
   invalidateCache('orders');
@@ -34,12 +46,12 @@ export const createOrder = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getAllOrders = asyncHandler(async (_req: Request, res: Response) => {
-  const orders = await orderRepo.findAll();
+  const orders = await getRepository().findAll();
   res.json(orders);
 });
 
 export const getOrderById = asyncHandler(async (req: Request, res: Response) => {
-  const order = await orderRepo.findById(req.params.id);
+  const order = await getRepository().findById(req.params.id);
   if (!order) {
     throw new NotFoundError('Order not found');
   }
@@ -47,7 +59,7 @@ export const getOrderById = asyncHandler(async (req: Request, res: Response) => 
 });
 
 export const updateOrder = asyncHandler(async (req: Request, res: Response) => {
-  const order = await orderRepo.update(req.params.id, req.body);
+  const order = await getRepository().update(req.params.id, req.body);
   if (!order) {
     throw new NotFoundError('Order not found');
   }
@@ -59,7 +71,7 @@ export const updateOrder = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const partialUpdateOrder = asyncHandler(async (req: Request, res: Response) => {
-  const order = await orderRepo.partialUpdate(req.params.id, req.body);
+  const order = await getRepository().partialUpdate(req.params.id, req.body);
   if (!order) {
     throw new NotFoundError('Order not found');
   }
@@ -71,7 +83,7 @@ export const partialUpdateOrder = asyncHandler(async (req: Request, res: Respons
 });
 
 export const deleteOrder = asyncHandler(async (req: Request, res: Response) => {
-  const order = await orderRepo.delete(req.params.id);
+  const order = await getRepository().delete(req.params.id);
   if (!order) {
     throw new NotFoundError('Order not found');
   }

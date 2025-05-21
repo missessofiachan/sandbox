@@ -1,9 +1,20 @@
-import { getRepository } from "typeorm";
+import { Repository } from "typeorm";
 import Order from "../entities/orders";
 import IOrderRepository from "./IOrderRepository";
+import { dbManager } from "../database/dbManager";
+import { logger } from "../utils/logger";
 
 class OrderRepositoryMSSQL implements IOrderRepository {
-  private repo = getRepository(Order);
+  private repo: Repository<Order>;
+
+  constructor() {
+    const dataSource = dbManager.getMSSQLDataSource();
+    if (!dataSource || !dataSource.isInitialized) {
+      logger.error('MSSQL data source not initialized in OrderRepositoryMSSQL');
+      throw new Error('MSSQL data source not initialized');
+    }
+    this.repo = dataSource.getRepository(Order);
+  }
 
   async create(data: any) {
     const order = this.repo.create(data);

@@ -22,21 +22,22 @@ import { logger, requestLogger } from './utils/logger';
 // Load environment variables
 dotenv.config();
 
-// Database connection
-const MONGO_URI = process.env.MONGO_URI;
+// Database connection using our dbManager
+import { dbManager } from './database/dbManager';
 
-if (!MONGO_URI) {
-    logger.error('MONGO_URI is not defined in environment variables.');
+// Connect to the appropriate database based on DB_TYPE
+dbManager.connect()
+  .then(success => {
+    if (!success) {
+      logger.error(`Failed to connect to ${process.env.DB_TYPE || 'mongo'} database`);
+      process.exit(1);
+    }
+    logger.info(`Connected to ${process.env.DB_TYPE || 'mongo'} database`);
+  })
+  .catch(err => {
+    logger.error(`Database connection error: ${err}`);
     process.exit(1);
-}
-
-try {
-    mongoose.connect(MONGO_URI);
-    logger.info('Connected to MongoDB');
-} catch (err) {
-    logger.error(`MongoDB connection error: ${err}`);
-    process.exit(1);
-}
+  });
 
 // Initializing the Express application
 const app: Application = express();
@@ -78,19 +79,29 @@ if (process.env.ENABLE_RATE_LIMIT === 'true') {
 
 // Health check endpoint
 app.get('/health', async (req, res) => {
+  const dbType = process.env.DB_TYPE || 'mongo';
   let dbStatus = 'unknown';
-  let dbType = process.env.DB_TYPE || 'mongo';
+  let mongoStatus = 'not checked';
+  let mssqlStatus = 'not checked';
+  
+  // Check the currently active database
   if (dbType === 'mongo') {
-    dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+    mongoStatus = dbManager.isMongoConnected() ? 'connected' : 'disconnected';
+    dbStatus = mongoStatus;
   } else {
-    // For MSSQL, you could add a ping here if needed
-    dbStatus = 'not checked';
+    mssqlStatus = dbManager.isMSSQLConnected() ? 'connected' : 'disconnected';
+    dbStatus = mssqlStatus;
   }
+
   res.status(200).json({
     status: 'ok',
     uptime: process.uptime(),
-    dbType,
+    activeDbType: dbType,
     dbStatus,
+    details: {
+      mongo: mongoStatus,
+      mssql: mssqlStatus
+    },
     timestamp: new Date().toISOString(),
   });
 });

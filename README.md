@@ -1,16 +1,19 @@
-# Sandbox Node.js CRUD API
+# Sandbox Node.js CRUD API with Dual-Database Support
 
-This project is a Node.js/TypeScript backend providing CRUD APIs for Users, Products, and Orders with role-based access control, JWT authentication, and MongoDB/MSSQL support.
+This project is a Node.js/TypeScript backend providing CRUD APIs for Users, Products, and Orders with role-based access control, JWT authentication, and dual-database support for MongoDB and MSSQL.
 
 ## Features
 
+- **Dual Database Support**: Switch between MongoDB and MSSQL with a configuration setting
 - User registration, login, and role-based access (admin/user)
-- Product and Order CRUD APIs
+- Product and Order CRUD APIs using repository pattern
 - JWT authentication for protected endpoints
 - Input validation using Joi
-- MongoDB (default) and optional MSSQL support
+- Structured Winston logging with console and file outputs
 - Response caching for improved performance
 - Cache monitoring and management API
+- Security enhancements with Helmet middleware
+- Health endpoint for system monitoring
 - Postman collections for API testing
 
 ## Project Structure
@@ -19,66 +22,108 @@ This project is a Node.js/TypeScript backend providing CRUD APIs for Users, Prod
 src/
   controllers/   # Route handlers for API logic
   entities/      # TypeORM entities (MSSQL)
-  middleware/    # JWT, CORS, and auth middlewares
-  models/        # Mongoose models (MongoDB)
-  repositories/  # Data access layer for MongoDB/MSSQL
-  routes/        # Express route definitions
-  scripts/       # Utility scripts (e.g., createAdmin)
-  types/         # TypeScript types/interfaces
-  validation/    # Joi validation schemas
-  views/         # Static HTML pages
-tests/           # API tests
+  middleware/    # Express middleware
+  models/        # MongoDB models
+  repositories/  # Database repositories (MongoDB and MSSQL)
+  routes/        # API route definitions
+  types/         # TypeScript interface definitions
+  utils/         # Utility functions
+  validation/    # Input validation schemas
 ```
 
-## Getting Started
+## Database Support
+
+This API can switch between MongoDB and MSSQL without code changes, using the repository pattern:
+
+1. **Repository Interfaces**: `IProductRepository`, `IUserRepository`, and `IOrderRepository` define the data access contracts
+2. **MongoDB Implementations**: `ProductRepositoryMongo`, `UserRepositoryMongo`, and `OrderRepositoryMongo`
+3. **MSSQL Implementations**: `ProductRepositoryMSSQL`, `UserRepositoryMSSQL`, and `OrderRepositoryMSSQL`
+
+Controllers dynamically select the correct repository based on the DB_TYPE environment variable.
+
+## Running with Different Databases
+
+To switch between databases, set the `DB_TYPE` environment variable to either `mongo` or `mssql`.
+
+Run with MongoDB:
+
+```bash
+npm run start:mongo
+```
+
+Run with MSSQL:
+
+```bash
+npm run start:mssql
+```
+
+Test both database connections:
+
+```bash
+npm run test:db
+```
+
+## Setup
 
 ### Prerequisites
 
-- Node.js >= 16
-- MongoDB running locally (see `.env` for connection string)
+- Node.js (v14+)
+- MongoDB (for MongoDB mode)
+- MSSQL Server (for MSSQL mode)
+- npm
 
 ### Installation
 
-```sh
-npm install
-```
+1. Clone the repository
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
 
 ### Environment Variables
 
-Create `.env` and adjust as needed:
+Create a `.env` file with the following variables:
 
-```
+```env
 # MongoDB connection URI
-MONGO_URI=mongodb://username:password@localhost:27017/yourdatabase?authSource=admin
-ADMIN_USERNAME=admin@example.com
-ADMIN_PASSWORD=your_secure_password
-SECRET_KEY=your_secret_key_here
+MONGO_URI=mongodb+srv://user:password@cluster.mongodb.net/your-db
+MONGO_DB=your-db-name
+MONGO_USER=your-username
+MONGO_PASSWORD=your-password
+MONGO_AUTH_DB=admin
 
-# Express server port
+# MSSQL connection
+MSSQL_HOST=localhost
+MSSQL_PORT=1433
+MSSQL_USER=your-user
+MSSQL_PASSWORD=your-password
+MSSQL_DB=your-db-name
+
+# Database selector - set to either 'mongo' or 'mssql'
+DB_TYPE=mongo
+
+# Server configuration
 PORT=3000
-
-# JWT settings
-JWT_EXPIRES_IN=1h
-JWT_ALGORITHM=HS256
-
-# Node environment
 NODE_ENV=development
 
-# CORS allowed origin
-CORS_ORIGIN=http://localhost:3000
+# Security and performance
+ENABLE_RATE_LIMIT=true
+ENABLE_CACHE=true
+ENABLE_HELMET=true
 
-# Rate limiting
-RATE_LIMIT_WINDOW_MS=900000
-RATE_LIMIT_MAX=100
-
-# Caching
-CACHE_DURATION=60                # Default cache duration in seconds
-PRODUCTS_CACHE_DURATION=300      # Product cache duration in seconds
-ORDERS_CACHE_DURATION=120        # Order cache duration in seconds
-CACHE_DEBUG=true                 # Enable cache debugging logs
-CACHE_SIZE_LIMIT=100             # Cache size limit in MB
-POPULAR_RESOURCE_MULTIPLIER=2    # Multiplier for popular resource TTL
+# Logging
+LOG_LEVEL=info
 ```
+
+## Health Check
+
+The API provides a health check endpoint at `/health` that returns:
+
+- System uptime
+- Database type (mongo/mssql)
+- Connection status for both databases
+- Current timestamp
 
 ### Build and Run
 
@@ -209,5 +254,3 @@ For a detailed explanation of each dependency, where it is used, and why, see [D
   ```sh
   npm test
   ```
-
-##

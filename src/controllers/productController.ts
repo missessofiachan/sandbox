@@ -7,6 +7,7 @@ import { connectMSSQL } from '../connectMSSQL';
 import { productSchema, productUpdateSchema } from '../validation/productValidation';
 import { asyncHandler, NotFoundError, BadRequestError } from '../middleware/errorHandlerMiddleware';
 import { clearCache, invalidateCache } from '../middleware/cacheMiddleware';
+import { logger } from '../utils/logger';
 
 // Dynamic repository selection based on DB_TYPE
 function getProductRepo(): IProductRepository {
@@ -14,7 +15,8 @@ function getProductRepo(): IProductRepository {
     try {
       return new ProductRepositoryMSSQL();
     } catch (err) {
-      console.error('MSSQL connection failed:', err);
+      logger.error(`MSSQL product repository initialization failed: ${err}`);
+      logger.info('Falling back to MongoDB product repository');
       return new ProductRepositoryMongo();
     }
   } else {
@@ -22,10 +24,18 @@ function getProductRepo(): IProductRepository {
   }
 }
 
-const productRepo: IProductRepository = getProductRepo();
+// Initialize repository lazily to ensure database connection is established first
+let productRepo: IProductRepository;
+
+function getRepository(): IProductRepository {
+  if (!productRepo) {
+    productRepo = getProductRepo();
+  }
+  return productRepo;
+}
 
 export const createProduct = asyncHandler(async (req: Request, res: Response) => {
-  const product = await productRepo.create(req.body);
+  const product = await getRepository().create(req.body);
   
   // Invalidate the products list cache
   invalidateCache('products');
@@ -34,12 +44,12 @@ export const createProduct = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const getAllProducts = asyncHandler(async (_req: Request, res: Response) => {
-  const products = await productRepo.findAll();
+  const products = await getRepository().findAll();
   res.json(products);
 });
 
 export const getProductById = asyncHandler(async (req: Request, res: Response) => {
-  const product = await productRepo.findById(req.params.id);
+  const product = await getRepository().findById(req.params.id);
   if (!product) {
     throw new NotFoundError('Product not found');
   }
@@ -47,7 +57,7 @@ export const getProductById = asyncHandler(async (req: Request, res: Response) =
 });
 
 export const updateProduct = asyncHandler(async (req: Request, res: Response) => {
-  const product = await productRepo.update(req.params.id, req.body);
+  const product = await getRepository().update(req.params.id, req.body);
   if (!product) {
     throw new NotFoundError('Product not found');
   }
@@ -59,7 +69,7 @@ export const updateProduct = asyncHandler(async (req: Request, res: Response) =>
 });
 
 export const partialUpdateProduct = asyncHandler(async (req: Request, res: Response) => {
-  const product = await productRepo.partialUpdate(req.params.id, req.body);
+  const product = await getRepository().partialUpdate(req.params.id, req.body);
   if (!product) {
     throw new NotFoundError('Product not found');
   }
@@ -71,7 +81,7 @@ export const partialUpdateProduct = asyncHandler(async (req: Request, res: Respo
 });
 
 export const deleteProduct = asyncHandler(async (req: Request, res: Response) => {
-  const product = await productRepo.delete(req.params.id);
+  const product = await getRepository().delete(req.params.id);
   if (!product) {
     throw new NotFoundError('Product not found');
   }

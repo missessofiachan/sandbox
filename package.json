@@ -9,7 +9,10 @@
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn src/server.ts",
     "seed": "ts-node src/scripts/seed.ts",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "test:db": "ts-node src/test-db-connection.ts",
+    "start:mongo": "cross-env DB_TYPE=mongo ts-node src/server.ts",
+    "start:mssql": "cross-env DB_TYPE=mssql ts-node src/server.ts"
   },
   "private": true,
   "dependencies": {
@@ -43,6 +46,7 @@
     "@types/node": "^22.15.17",
     "@typescript-eslint/eslint-plugin": "^8.32.0",
     "@typescript-eslint/parser": "^8.32.0",
+    "cross-env": "^7.0.3",
     "eslint": "^9.26.0",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",

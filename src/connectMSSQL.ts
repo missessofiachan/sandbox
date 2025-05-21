@@ -1,34 +1,17 @@
 import { DataSource } from "typeorm";
-import Product from "./entities/Product";
-import User from "./entities/user";
-import Order from "./entities/orders";
+import { dbManager } from "./database/dbManager";
+import { logger } from "./utils/logger";
 
-export const connectMSSQL = async () => {
-  // Debug: print env variables
-  console.log('MSSQL_HOST:', process.env.MSSQL_HOST);
-  console.log('MSSQL_PORT:', process.env.MSSQL_PORT);
-  console.log('MSSQL_USER:', process.env.MSSQL_USER);
-  console.log('MSSQL_PASSWORD:', process.env.MSSQL_PASSWORD);
-  console.log('MSSQL_DB:', process.env.MSSQL_DB);
-
-  const AppDataSource = new DataSource({
-    type: "mssql",
-    host: process.env.MSSQL_HOST,
-    port: Number(process.env.MSSQL_PORT),
-    username: process.env.MSSQL_USER,
-    password: process.env.MSSQL_PASSWORD,
-    database: process.env.MSSQL_DB,
-    entities: [Product, User, Order],
-    synchronize: true,
-    options: {
-      encrypt: false,
-      trustServerCertificate: true
-    },
-    extra: {
-      validateConnection: false,
-      trustServerCertificate: true
+export const connectMSSQL = async (): Promise<DataSource | null> => {
+  try {
+    const success = await dbManager.connectMSSQL();
+    if (!success) {
+      logger.error('Failed to connect to MSSQL');
+      return null;
     }
-  });
-
-  return await AppDataSource.initialize();
+    return dbManager.getMSSQLDataSource();
+  } catch (error) {
+    logger.error(`Error connecting to MSSQL: ${error}`);
+    return null;
+  }
 };
