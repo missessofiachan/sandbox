@@ -2,6 +2,7 @@
 import { Request, Response, NextFunction, RequestHandler } from 'express';
 import mcache from 'memory-cache';
 import dotenv from 'dotenv';
+import { logger } from '../utils/logger';
 
 // Load environment variables
 dotenv.config();
@@ -77,10 +78,38 @@ const enforceSizeLimit = (): void => {
       }
     }
     if (CACHE_DEBUG) {
-      console.log(`[Cache] Evicted ${removed} entries due to size limit.`);
+      logger.info(`[Cache] Evicted ${removed} entries due to size limit.`);
     }
   }
 };
+
+// Logging helper
+function logCacheEvent(message: string) {
+  if (CACHE_DEBUG) {
+    logger.info(message);
+  }
+}
+
+// Cache key generation helper
+function getCacheKey(req: Request, customKey?: (req: Request) => string): string {
+  return customKey ? customKey(req) : `__cache__${req.originalUrl || req.url}`;
+}
+
+// Cache stats update helpers
+function incrementHits() {
+  cacheStats.hits++;
+}
+function incrementMisses() {
+  cacheStats.misses++;
+}
+function incrementEntries(size: number) {
+  cacheStats.entries++;
+  cacheStats.size += size;
+}
+function decrementEntries(size: number) {
+  cacheStats.entries--;
+  cacheStats.size -= size;
+}
 
 /**
  * Creates a middleware function that caches API responses
@@ -96,9 +125,7 @@ export const cacheResponse = (duration: number, customKey?: (req: Request) => st
     }
 
     // Generate cache key
-    const key = customKey 
-      ? customKey(req) 
-      : `__cache__${req.originalUrl || req.url}`;
+    const key = getCacheKey(req, customKey);
     
     // Track popularity for this resource
     trackPopularity(key);
@@ -108,13 +135,11 @@ export const cacheResponse = (duration: number, customKey?: (req: Request) => st
     
     if (cachedBody) {
       // Update statistics
-      cacheStats.hits++;
+      incrementHits();
+      logCacheEvent(`[Cache] HIT: ${key}`);
+      logCacheEvent(`[Cache] Stats: Hits=${cacheStats.hits}, Misses=${cacheStats.misses}, Entries=${cacheStats.entries}, Size=${Math.round(cacheStats.size / 1024 / 1024)}MB`);
       
-      if (CACHE_DEBUG) {
-        console.log(`[Cache] HIT: ${key}`);
-        console.log(`[Cache] Stats: Hits=${cacheStats.hits}, Misses=${cacheStats.misses}, Entries=${cacheStats.entries}, Size=${Math.round(cacheStats.size / 1024 / 1024)}MB`);
-      }
-        // Send cached response with headers indicating it's from cache
+      // Send cached response with headers indicating it's from cache
       res.setHeader('X-Cache', 'HIT');
       // Add Cache-Control header to inform clients about caching
       res.setHeader('Cache-Control', `public, max-age=${duration}`);
@@ -123,12 +148,9 @@ export const cacheResponse = (duration: number, customKey?: (req: Request) => st
     }
 
     // Update statistics
-    cacheStats.misses++;
-    
-    if (CACHE_DEBUG) {
-      console.log(`[Cache] MISS: ${key}`);
-      console.log(`[Cache] Stats: Hits=${cacheStats.hits}, Misses=${cacheStats.misses}, Entries=${cacheStats.entries}, Size=${Math.round(cacheStats.size / 1024 / 1024)}MB`);
-    }
+    incrementMisses();
+    logCacheEvent(`[Cache] MISS: ${key}`);
+    logCacheEvent(`[Cache] Stats: Hits=${cacheStats.hits}, Misses=${cacheStats.misses}, Entries=${cacheStats.entries}, Size=${Math.round(cacheStats.size / 1024 / 1024)}MB`);
 
     // Override send function to cache the response
     const originalSend = res.send.bind(res);
@@ -142,11 +164,10 @@ export const cacheResponse = (duration: number, customKey?: (req: Request) => st
         const responseSize = Buffer.from(JSON.stringify(body)).length;
         
         // Update cache statistics
-        cacheStats.size += responseSize;
-        cacheStats.entries++;
+        incrementEntries(responseSize);
         
-        if (CACHE_DEBUG && adjustedDuration !== duration) {
-          console.log(`[Cache] Adjusted TTL for popular resource: ${key} (${duration}s → ${adjustedDuration}s)`);
+        if (adjustedDuration !== duration) {
+          logCacheEvent(`[Cache] Adjusted TTL for popular resource: ${key} (${duration}s → ${adjustedDuration}s)`);
         }
         
         // Add to cache with adjusted TTL
@@ -180,14 +201,11 @@ export const clearCache = (key?: string): void => {
     if (entry) {
       // Update statistics when removing a specific entry
       const size = Buffer.from(JSON.stringify(entry)).length;
-      cacheStats.size -= size;
-      cacheStats.entries--;
+      decrementEntries(size);
       delete cacheStats.popular[key];
       
       mcache.del(key);
-      if (CACHE_DEBUG) {
-        console.log(`[Cache] Cleared: ${key}`);
-      }
+      logCacheEvent(`[Cache] Cleared: ${key}`);
     }
   } else {
     // Reset statistics when clearing all cache
@@ -196,9 +214,7 @@ export const clearCache = (key?: string): void => {
     cacheStats.popular = {};
     
     mcache.clear();
-    if (CACHE_DEBUG) {
-      console.log('[Cache] All entries cleared');
-    }
+    logCacheEvent('[Cache] All entries cleared');
   }
 };
 
@@ -216,9 +232,7 @@ export const invalidateCache = (route: string, id?: string): void => {
     clearCache(`__cache__/api/${route}/${id}`);
   }
   
-  if (CACHE_DEBUG) {
-    console.log(`[Cache] Invalidated route: ${route}${id ? ` with ID: ${id}` : ''}`);
-  }
+  logCacheEvent(`[Cache] Invalidated route: ${route}${id ? ` with ID: ${id}` : ''}`);
 };
 
 /**

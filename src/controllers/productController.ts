@@ -9,22 +9,20 @@ import { asyncHandler, NotFoundError, BadRequestError } from '../middleware/erro
 import { clearCache, invalidateCache } from '../middleware/cacheMiddleware';
 
 // Dynamic repository selection based on DB_TYPE
-declare let productRepo: IProductRepository;
-
-if (process.env.DB_TYPE === 'mssql') {
-  // Use MSSQL
-  connectMSSQL().then(() => {
-    productRepo = new ProductRepositoryMSSQL();
-    console.log('Connected to MSSQL and using ProductRepositoryMSSQL');
-  }).catch(err => {
-    console.error('MSSQL connection failed:', err);
-    productRepo = new ProductRepositoryMongo(); // fallback
-  });
-} else {
-  // Default to MongoDB
-  productRepo = new ProductRepositoryMongo();
-  console.log('Using MongoDB for products');
+function getProductRepo(): IProductRepository {
+  if (process.env.DB_TYPE === 'mssql') {
+    try {
+      return new ProductRepositoryMSSQL();
+    } catch (err) {
+      console.error('MSSQL connection failed:', err);
+      return new ProductRepositoryMongo();
+    }
+  } else {
+    return new ProductRepositoryMongo();
+  }
 }
+
+const productRepo: IProductRepository = getProductRepo();
 
 export const createProduct = asyncHandler(async (req: Request, res: Response) => {
   const product = await productRepo.create(req.body);

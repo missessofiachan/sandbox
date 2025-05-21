@@ -76,6 +76,25 @@ if (process.env.ENABLE_RATE_LIMIT === 'true') {
   logger.warn('Rate limiting is disabled');
 }
 
+// Health check endpoint
+app.get('/health', async (req, res) => {
+  let dbStatus = 'unknown';
+  let dbType = process.env.DB_TYPE || 'mongo';
+  if (dbType === 'mongo') {
+    dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected';
+  } else {
+    // For MSSQL, you could add a ping here if needed
+    dbStatus = 'not checked';
+  }
+  res.status(200).json({
+    status: 'ok',
+    uptime: process.uptime(),
+    dbType,
+    dbStatus,
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // Setting up routes for authentication
 app.use('/api/auth', authRoutes);
 // Setting up routes for product-related operations

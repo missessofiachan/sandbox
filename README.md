@@ -181,6 +181,26 @@ The caching system adapts TTL (Time-To-Live) values based on resource popularity
 - Frequently accessed resources get longer cache durations
 - This dynamic TTL adjustment optimizes cache efficiency
 
+## Dependencies
+
+This project uses the following major dependencies:
+
+- **express**: Core web framework for building REST APIs and handling HTTP requests/responses.
+- **mongoose**: ODM for MongoDB, used for schema definition, validation, and database operations.
+- **typeorm**: ORM for MSSQL, used for schema definition, migrations, and database operations.
+- **winston**: Provides robust, configurable logging for errors, requests, and application events.
+- **helmet**: Adds security-related HTTP headers to protect the app from common web vulnerabilities.
+- **express-rate-limit**: Middleware to limit repeated requests to public APIs and mitigate brute-force attacks.
+- **dotenv**: Loads environment variables from `.env` file for configuration.
+- **bcrypt**: Securely hashes user passwords before storing them in the database.
+- **jsonwebtoken**: Handles JWT creation and verification for authentication and authorization.
+- **joi**: Schema validation for request payloads (users, products, orders).
+- **cors**: Enables Cross-Origin Resource Sharing for API access from different domains.
+- **mssql**: Connects to Microsoft SQL Server for data storage and retrieval.
+- **@types/***: TypeScript type definitions for libraries like express, mongoose, winston, helmet, etc.
+
+For a detailed explanation of each dependency, where it is used, and why, see [DEPENDENCIES.md](./DEPENDENCIES.md).
+
 ## Testing
 
 - Use the provided Postman collections (`*.postman_collection.json`) for API testing.

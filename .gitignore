@@ -13,6 +13,9 @@
 
 # testing
 /coverage
+# logs
+/logs
+*.log
 
 # production
 /build
