@@ -1,5 +1,7 @@
 import { DataSource } from "typeorm";
 import Product from "./entities/Product";
+import User from "./entities/user";
+import Order from "./entities/orders";
 
 export const connectMSSQL = async () => {
   // Debug: print env variables
@@ -16,7 +18,7 @@ export const connectMSSQL = async () => {
     username: process.env.MSSQL_USER,
     password: process.env.MSSQL_PASSWORD,
     database: process.env.MSSQL_DB,
-    entities: [Product],
+    entities: [Product, User, Order],
     synchronize: true,
     options: {
       encrypt: false,

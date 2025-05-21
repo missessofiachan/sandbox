@@ -2,23 +2,29 @@
 import { Request, Response, NextFunction } from 'express';
 import IProductRepository from '../repositories/IProductRepository';
 import { ProductRepositoryMongo } from '../repositories/ProductRepositoryMongo';
-// import { ProductRepositoryMSSQL } from '../repositories/ProductRepositoryMSSQL';
-// import { connectMSSQL } from '../connectMSSQL';
+import { ProductRepositoryMSSQL } from '../repositories/ProductRepositoryMSSQL';
+import { connectMSSQL } from '../connectMSSQL';
 import { productSchema, productUpdateSchema } from '../validation/productValidation';
 import { asyncHandler, NotFoundError, BadRequestError } from '../middleware/errorHandlerMiddleware';
 import { clearCache, invalidateCache } from '../middleware/cacheMiddleware';
 
-// Initialize with MongoDB repository (SQL disabled)
-const productRepo: IProductRepository = new ProductRepositoryMongo();
-console.log('Using MongoDB for products');
+// Dynamic repository selection based on DB_TYPE
+declare let productRepo: IProductRepository;
 
-// SQL connection disabled
-// connectMSSQL().then(() => {
-//   productRepo = new ProductRepositoryMSSQL();
-//   console.log('Connected to MSSQL and using ProductRepositoryMSSQL');
-// }).catch(err => {
-//   console.error('MSSQL connection failed:', err);
-// });
+if (process.env.DB_TYPE === 'mssql') {
+  // Use MSSQL
+  connectMSSQL().then(() => {
+    productRepo = new ProductRepositoryMSSQL();
+    console.log('Connected to MSSQL and using ProductRepositoryMSSQL');
+  }).catch(err => {
+    console.error('MSSQL connection failed:', err);
+    productRepo = new ProductRepositoryMongo(); // fallback
+  });
+} else {
+  // Default to MongoDB
+  productRepo = new ProductRepositoryMongo();
+  console.log('Using MongoDB for products');
+}
 
 export const createProduct = asyncHandler(async (req: Request, res: Response) => {
   const product = await productRepo.create(req.body);
