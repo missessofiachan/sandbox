@@ -1,4 +1,4 @@
-export interface IOrderRepository {
+export default interface IOrderRepository {
   create(data: any): Promise<any>;
   findById(id: string | number): Promise<any>;
   findAll(): Promise<any[]>;
@@ -6,4 +6,3 @@ export interface IOrderRepository {
   partialUpdate(id: string | number, data: any): Promise<any>;
   delete(id: string | number): Promise<any>;
 }
-export default IOrderRepository;

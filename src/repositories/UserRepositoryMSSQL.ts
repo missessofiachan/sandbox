@@ -10,7 +10,8 @@ class UserRepositoryMSSQL implements IUserRepository {
     return this.repo.save(user);
   }
   async findById(id: string | number) {
-    return this.repo.findOne({ where: { id } });
+    const numericId = typeof id === 'string' ? parseInt(id, 10) : id;
+    return this.repo.findOne({ where: { id: numericId } });
   }
   async findAll() {
     return this.repo.find();
