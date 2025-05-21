@@ -25,19 +25,21 @@ dotenv.config();
 // Database connection using our dbManager
 import { dbManager } from './database/dbManager';
 
-// Connect to the appropriate database based on DB_TYPE
-dbManager.connect()
-  .then(success => {
+// Initialize database connections
+(async () => {
+  try {
+    const dbType = process.env.DB_TYPE || 'mongo';
+    const success = await dbManager.connect();
     if (!success) {
-      logger.error(`Failed to connect to ${process.env.DB_TYPE || 'mongo'} database`);
+      logger.error(`Failed to connect to ${dbType} database`);
       process.exit(1);
     }
-    logger.info(`Connected to ${process.env.DB_TYPE || 'mongo'} database`);
-  })
-  .catch(err => {
+    logger.info(`Connected to ${dbType} database`);
+  } catch (err) {
     logger.error(`Database connection error: ${err}`);
     process.exit(1);
-  });
+  }
+})();
 
 // Initializing the Express application
 const app: Application = express();

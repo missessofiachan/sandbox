@@ -3,7 +3,10 @@
 import { Request, Response } from 'express';
 import { userLoginSchema } from '../validation/userValidation';
 import createToken from '../middleware/createTokenMiddleware';
-import User from '../models/User';
+import IUserRepository from '../repositories/IUserRepository';
+import { UserRepositoryMongo } from '../repositories/UserRepositoryMongo';
+import UserRepositoryMSSQL from '../repositories/UserRepositoryMSSQL';
+import { logger } from '../utils/logger';
 import bcrypt from 'bcrypt';
 import { asyncHandler, UnauthorizedError, BadRequestError, ServiceUnavailableError } from '../middleware/errorHandlerMiddleware';
 
@@ -21,12 +24,31 @@ function isDbError(err: any): boolean {
   );
 }
 
+// Factory to select appropriate user repository for auth
+function getAuthRepo(): IUserRepository {
+  if (process.env.DB_TYPE === 'mssql') {
+    try {
+      return new UserRepositoryMSSQL();
+    } catch (err) {
+      logger.error(`MSSQL auth repository init failed: ${err}`);
+      logger.info('Falling back to MongoDB auth repository');
+      return new UserRepositoryMongo();
+    }
+  }
+  return new UserRepositoryMongo();
+}
+let authRepo: IUserRepository;
+function getRepository(): IUserRepository {
+  if (!authRepo) authRepo = getAuthRepo();
+  return authRepo;
+}
+
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const { email, password } = req.body;
   
   try {
     // Find user in DB
-    const user = await User.findOne({ email });
+    const user = await getRepository().findByEmail(email);
     if (!user) {
       throw new UnauthorizedError('Invalid username or password');
     }
