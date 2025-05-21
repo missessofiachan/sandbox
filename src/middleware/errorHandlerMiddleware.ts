@@ -1,5 +1,6 @@
 // Error handling middleware for consistent API error responses
 import { Request, Response, NextFunction } from 'express';
+import { logger } from '../utils/logger';
 
 // Define error types for better error handling
 export class APIError extends Error {
@@ -78,12 +79,12 @@ export class TooManyRequestsError extends APIError {
 // Global error handler
 export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
   // Log error with additional request information for debugging
-  console.error(`Error: ${err.message}`);
-  console.error(`Request: ${req.method} ${req.originalUrl}`);
-  console.error(`Request IP: ${req.ip}`);
-  if (err.stack) {
-    console.error(`Stack trace: ${err.stack}`);
-  }
+  logger.error(`Error: ${err.message}`, { 
+    url: req.originalUrl, 
+    method: req.method,
+    stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
+    body: req.body
+  });
   
   // Default error status and message
   let statusCode = 500;

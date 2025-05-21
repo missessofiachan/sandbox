@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import path from 'path';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
 import pageRoutes from './routes/pageRoutes';
 import authRoutes from './routes/authRoutes';
 import productRoutes from './routes/productRoutes';
@@ -16,6 +17,7 @@ import userRoutes from './routes/userRoutes';
 import cacheRoutes from './routes/cacheRoutes';
 import corsMiddleware from './middleware/corsMiddleware';
 import { errorHandler, notFoundHandler } from './middleware/errorHandlerMiddleware';
+import { logger, requestLogger } from './utils/logger';
 
 // Load environment variables
 dotenv.config();
@@ -24,20 +26,37 @@ dotenv.config();
 const MONGO_URI = process.env.MONGO_URI;
 
 if (!MONGO_URI) {
-    console.error('Error: MONGO_URI is not defined in environment variables.');
+    logger.error('MONGO_URI is not defined in environment variables.');
     process.exit(1);
 }
 
 try {
     mongoose.connect(MONGO_URI);
-    console.log('Connected to MongoDB');
+    logger.info('Connected to MongoDB');
 } catch (err) {
-    console.error('MongoDB connection error:', err);
+    logger.error(`MongoDB connection error: ${err}`);
     process.exit(1);
 }
 
 // Initializing the Express application
 const app: Application = express();
+
+// Use helmet for security headers if enabled
+if (process.env.ENABLE_HELMET === 'true') {
+  app.use(helmet());
+  logger.info('Helmet middleware enabled for security headers');
+}
+
+// Use request logger middleware
+app.use(requestLogger);
+
+// Middleware to parse incoming JSON requests
+app.use(express.json());
+// Serve static files (CSS, JS)
+app.use(express.static(path.join(__dirname, '..')));
+
+// Enable CORS and handle OPTIONS pre-flight requests
+app.use(corsMiddleware());
 
 // Configure rate limiting middleware
 const apiLimiter = rateLimit({
@@ -48,16 +67,14 @@ const apiLimiter = rateLimit({
     message: { error: 'Too many requests from this IP, please try again after 15 minutes' }
 });
 
-// Middleware to parse incoming JSON requests
-app.use(express.json());
-// Serve static files (CSS, JS)
-app.use(express.static(path.join(__dirname, '..')));
-
-// Enable CORS and handle OPTIONS pre-flight requests
-app.use(corsMiddleware());
-
-// Apply rate limiting to all API routes
-app.use('/api', apiLimiter);
+// Apply rate limiting to API routes if enabled
+if (process.env.ENABLE_RATE_LIMIT === 'true') {
+  const apiPrefix = process.env.API_PREFIX || '/api';
+  app.use(apiPrefix, apiLimiter);
+  logger.info(`Rate limiting enabled for ${apiPrefix} routes`);
+} else {
+  logger.warn('Rate limiting is disabled');
+}
 
 // Setting up routes for authentication
 app.use('/api/auth', authRoutes);
@@ -81,7 +98,9 @@ app.use(errorHandler);
 // Starting the server
 const PORT: number = Number(process.env.PORT) || 3000;
 app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    logger.info(`Server is running on http://localhost:${PORT}`);
+    logger.info(`Environment: ${process.env.NODE_ENV}`);
+    logger.info(`Database type: ${process.env.DB_TYPE}`);
 });
 
 export default app;
