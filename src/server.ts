@@ -15,6 +15,7 @@ import productRoutes from './routes/productRoutes';
 import orderRoutes from './routes/orderRoutes';
 import userRoutes from './routes/userRoutes';
 import cacheRoutes from './routes/cacheRoutes';
+import databaseRoutes from './routes/databaseRoutes';
 import corsMiddleware from './middleware/corsMiddleware';
 import { errorHandler, notFoundHandler } from './middleware/errorHandlerMiddleware';
 import { logger, requestLogger } from './utils/logger';
@@ -79,33 +80,51 @@ if (process.env.ENABLE_RATE_LIMIT === 'true') {
   logger.warn('Rate limiting is disabled');
 }
 
-// Health check endpoint
+// Enhanced health check endpoint with connection pool statistics
 app.get('/health', async (req, res) => {
-  const dbType = process.env.DB_TYPE || 'mongo';
-  let dbStatus = 'unknown';
-  let mongoStatus = 'not checked';
-  let mssqlStatus = 'not checked';
-  
-  // Check the currently active database
-  if (dbType === 'mongo') {
-    mongoStatus = dbManager.isMongoConnected() ? 'connected' : 'disconnected';
-    dbStatus = mongoStatus;
-  } else {
-    mssqlStatus = dbManager.isMSSQLConnected() ? 'connected' : 'disconnected';
-    dbStatus = mssqlStatus;
-  }
+  try {
+    const dbType = process.env.DB_TYPE || 'mongo';
+    
+    // Get comprehensive database health information
+    const databaseHealth = await dbManager.getDatabaseHealth();
+    
+    // Determine overall status
+    let dbStatus = 'unknown';
+    if (dbType === 'mongo') {
+      dbStatus = databaseHealth.mongodb.connected ? 'connected' : 'disconnected';
+    } else {
+      dbStatus = databaseHealth.mssql.connected ? 'connected' : 'disconnected';
+    }
 
-  res.status(200).json({
-    status: 'ok',
-    uptime: process.uptime(),
-    activeDbType: dbType,
-    dbStatus,
-    details: {
-      mongo: mongoStatus,
-      mssql: mssqlStatus
-    },
-    timestamp: new Date().toISOString(),
-  });
+    const healthResponse = {
+      status: 'ok',
+      uptime: process.uptime(),
+      activeDbType: dbType,
+      dbStatus,
+      database: databaseHealth,
+      connectionPools: {
+        mongodb: databaseHealth.mongodb.stats,
+        mssql: databaseHealth.mssql.stats
+      },
+      memory: {
+        used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024 * 100) / 100,
+        total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024 * 100) / 100,
+        external: Math.round(process.memoryUsage().external / 1024 / 1024 * 100) / 100,
+        rss: Math.round(process.memoryUsage().rss / 1024 / 1024 * 100) / 100
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    res.status(200).json(healthResponse);
+  } catch (error) {
+    logger.error('Health check error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Health check failed',
+      error: (error as Error).message,
+      timestamp: new Date().toISOString(),
+    });
+  }
 });
 
 // Setting up routes for authentication
@@ -118,6 +137,8 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
 // Setting up routes for cache management
 app.use('/api/cache', cacheRoutes);
+// Setting up routes for database monitoring
+app.use('/api/database', databaseRoutes);
 // Setting up routes for serving pages (should be last)
 app.use('/', pageRoutes);
 

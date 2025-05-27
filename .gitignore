@@ -45,3 +45,5 @@ next-env.d.ts
 */node_modules
 .node_modules
 node_modules
+CONNECTION_POOLING.md
+improvements.md
