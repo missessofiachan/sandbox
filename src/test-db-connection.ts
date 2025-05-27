@@ -36,21 +36,21 @@ async function testMSSQL() {
 
 async function testMain() {
   logger.info('=== Database Connection Test ===');
-  
+
   // Test MongoDB
   await testMongoDB();
-  
+
   // Test MSSQL
   await testMSSQL();
-  
+
   // Close connections
   await dbManager.closeConnections();
-  
+
   logger.info('=== Test Complete ===');
 }
 
 // Run tests
-testMain().catch(err => {
+testMain().catch((err) => {
   logger.error(`Unhandled error during test: ${err}`);
   process.exit(1);
 });

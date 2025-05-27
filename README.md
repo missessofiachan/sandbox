@@ -242,7 +242,7 @@ This project uses the following major dependencies:
 - **joi**: Schema validation for request payloads (users, products, orders).
 - **cors**: Enables Cross-Origin Resource Sharing for API access from different domains.
 - **mssql**: Connects to Microsoft SQL Server for data storage and retrieval.
-- **@types/***: TypeScript type definitions for libraries like express, mongoose, winston, helmet, etc.
+- **@types/\***: TypeScript type definitions for libraries like express, mongoose, winston, helmet, etc.
 
 For a detailed explanation of each dependency, where it is used, and why, see [DEPENDENCIES.md](./DEPENDENCIES.md).
 

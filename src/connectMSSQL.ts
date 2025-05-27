@@ -1,6 +1,6 @@
-import { DataSource } from "typeorm";
-import { dbManager } from "./database/dbManager";
-import { logger } from "./utils/logger";
+import { DataSource } from 'typeorm';
+import { dbManager } from './database/dbManager';
+import { logger } from './utils/logger';
 
 export const connectMSSQL = async (): Promise<DataSource | null> => {
   try {

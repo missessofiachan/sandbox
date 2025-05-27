@@ -1,6 +1,6 @@
 // Database connection manager
 import mongoose from 'mongoose';
-import { DataSource } from "typeorm";
+import { DataSource } from 'typeorm';
 import { logger } from '../utils/logger';
 import Product from '../entities/Product';
 import User from '../entities/user';
@@ -12,17 +12,17 @@ class DBManager {
   private mongoConnected: boolean = false;
   private mssqlConnected: boolean = false;
   private mssqlDataSource: DataSource | null = null;
-  
+
   // Singleton pattern
   public static getInstance(): DBManager {
     if (!DBManager.instance) {
       DBManager.instance = new DBManager();
     }
     return DBManager.instance;
-  }  // Connect to MongoDB with optimized connection pooling
+  } // Connect to MongoDB with optimized connection pooling
   public async connectMongo(): Promise<boolean> {
     if (this.mongoConnected) return true;
-    
+
     const MONGO_URI = process.env.MONGO_URI;
     if (!MONGO_URI) {
       logger.error('MONGO_URI is not defined in environment variables.');
@@ -33,46 +33,56 @@ class DBManager {
       const mongoOptions = {
         // Connection Pool Settings
         maxPoolSize: Number(process.env.MONGO_MAX_POOL_SIZE) || 10, // Maximum number of connections in the pool
-        minPoolSize: Number(process.env.MONGO_MIN_POOL_SIZE) || 2,  // Minimum number of connections in the pool
+        minPoolSize: Number(process.env.MONGO_MIN_POOL_SIZE) || 2, // Minimum number of connections in the pool
         maxIdleTimeMS: Number(process.env.MONGO_MAX_IDLE_TIME_MS) || 30000, // Close connections after 30 seconds of inactivity
-        
+
         // Connection Timeout Settings
-        serverSelectionTimeoutMS: Number(process.env.MONGO_SERVER_SELECTION_TIMEOUT_MS) || 5000, // How long to try to connect
+        serverSelectionTimeoutMS:
+          Number(process.env.MONGO_SERVER_SELECTION_TIMEOUT_MS) || 5000, // How long to try to connect
         socketTimeoutMS: Number(process.env.MONGO_SOCKET_TIMEOUT_MS) || 45000, // How long a send or receive on a socket can take
         connectTimeoutMS: Number(process.env.MONGO_CONNECT_TIMEOUT_MS) || 10000, // How long to wait for initial connection
-        
+
         // Heartbeat and Monitoring
-        heartbeatFrequencyMS: Number(process.env.MONGO_HEARTBEAT_FREQUENCY_MS) || 10000, // Frequency of heartbeat checks
-        
+        heartbeatFrequencyMS:
+          Number(process.env.MONGO_HEARTBEAT_FREQUENCY_MS) || 10000, // Frequency of heartbeat checks
+
         // Buffer Settings
         bufferMaxEntries: 0, // Disable mongoose buffering
         bufferCommands: false, // Disable mongoose buffering
-        
+
         // Replica Set Settings (if using replica sets)
-        readPreference: process.env.MONGO_READ_PREFERENCE as any || 'primary',
-        
+        readPreference: (process.env.MONGO_READ_PREFERENCE as any) || 'primary',
+
         // Retry Settings
         retryWrites: process.env.MONGO_RETRY_WRITES !== 'false',
         retryReads: process.env.MONGO_RETRY_READS !== 'false',
-        
+
         // Compression
-        compressors: (process.env.MONGO_COMPRESSORS?.split(',') as ('zlib' | 'none' | 'snappy' | 'zstd')[]) || ['zlib'],
-        
+        compressors: (process.env.MONGO_COMPRESSORS?.split(',') as (
+          | 'zlib'
+          | 'none'
+          | 'snappy'
+          | 'zstd'
+        )[]) || ['zlib'],
+
         // Authentication and Security
         authSource: process.env.MONGO_AUTH_SOURCE || 'admin',
       };
 
       await mongoose.connect(MONGO_URI, mongoOptions);
       this.mongoConnected = true;
-      
+
       // Log connection pool configuration
-      logger.info('Connected to MongoDB with optimized connection pool settings', {
-        maxPoolSize: mongoOptions.maxPoolSize,
-        minPoolSize: mongoOptions.minPoolSize,
-        maxIdleTimeMS: mongoOptions.maxIdleTimeMS,
-        serverSelectionTimeoutMS: mongoOptions.serverSelectionTimeoutMS
-      });
-      
+      logger.info(
+        'Connected to MongoDB with optimized connection pool settings',
+        {
+          maxPoolSize: mongoOptions.maxPoolSize,
+          minPoolSize: mongoOptions.minPoolSize,
+          maxIdleTimeMS: mongoOptions.maxIdleTimeMS,
+          serverSelectionTimeoutMS: mongoOptions.serverSelectionTimeoutMS,
+        }
+      );
+
       return true;
     } catch (err) {
       logger.error(`MongoDB connection error: ${err}`);
@@ -82,14 +92,15 @@ class DBManager {
   // Connect to MSSQL with optimized connection pooling
   public async connectMSSQL(): Promise<boolean> {
     if (this.mssqlConnected && this.mssqlDataSource) return true;
-    
+
     try {
       // Debug: print env variables
       logger.debug('MSSQL_HOST:', process.env.MSSQL_HOST);
       logger.debug('MSSQL_PORT:', process.env.MSSQL_PORT);
       logger.debug('MSSQL_USER:', process.env.MSSQL_USER);
-      logger.debug('MSSQL_DB:', process.env.MSSQL_DB);      this.mssqlDataSource = new DataSource({
-        type: "mssql",
+      logger.debug('MSSQL_DB:', process.env.MSSQL_DB);
+      this.mssqlDataSource = new DataSource({
+        type: 'mssql',
         host: process.env.MSSQL_HOST,
         port: Number(process.env.MSSQL_PORT),
         username: process.env.MSSQL_USER,
@@ -97,64 +108,79 @@ class DBManager {
         database: process.env.MSSQL_DB,
         entities: [Product, User, Order],
         synchronize: false, // Prevents table recreation errors
-        
+
         // Connection Pool Configuration
         extra: {
           // Connection Pool Settings
           pool: {
             max: Number(process.env.MSSQL_POOL_MAX) || 10, // Maximum connections
-            min: Number(process.env.MSSQL_POOL_MIN) || 2,  // Minimum connections
-            acquireTimeoutMillis: Number(process.env.MSSQL_ACQUIRE_TIMEOUT_MS) || 60000, // Timeout acquiring connection
-            idleTimeoutMillis: Number(process.env.MSSQL_IDLE_TIMEOUT_MS) || 30000, // Idle timeout
-            createTimeoutMillis: Number(process.env.MSSQL_CREATE_TIMEOUT_MS) || 30000, // Creation timeout
-            destroyTimeoutMillis: Number(process.env.MSSQL_DESTROY_TIMEOUT_MS) || 5000, // Destruction timeout
-            reapIntervalMillis: Number(process.env.MSSQL_REAP_INTERVAL_MS) || 1000, // Cleanup interval
-            createRetryIntervalMillis: Number(process.env.MSSQL_CREATE_RETRY_INTERVAL_MS) || 200, // Retry interval
+            min: Number(process.env.MSSQL_POOL_MIN) || 2, // Minimum connections
+            acquireTimeoutMillis:
+              Number(process.env.MSSQL_ACQUIRE_TIMEOUT_MS) || 60000, // Timeout acquiring connection
+            idleTimeoutMillis:
+              Number(process.env.MSSQL_IDLE_TIMEOUT_MS) || 30000, // Idle timeout
+            createTimeoutMillis:
+              Number(process.env.MSSQL_CREATE_TIMEOUT_MS) || 30000, // Creation timeout
+            destroyTimeoutMillis:
+              Number(process.env.MSSQL_DESTROY_TIMEOUT_MS) || 5000, // Destruction timeout
+            reapIntervalMillis:
+              Number(process.env.MSSQL_REAP_INTERVAL_MS) || 1000, // Cleanup interval
+            createRetryIntervalMillis:
+              Number(process.env.MSSQL_CREATE_RETRY_INTERVAL_MS) || 200, // Retry interval
           },
-          
+
           // Connection Options
-          connectionTimeout: Number(process.env.MSSQL_CONNECTION_TIMEOUT_MS) || 15000, // Connection timeout
+          connectionTimeout:
+            Number(process.env.MSSQL_CONNECTION_TIMEOUT_MS) || 15000, // Connection timeout
           requestTimeout: Number(process.env.MSSQL_REQUEST_TIMEOUT_MS) || 15000, // Request timeout
           cancelTimeout: Number(process.env.MSSQL_CANCEL_TIMEOUT_MS) || 5000, // Cancel timeout
-          
+
           // Security Settings
           encrypt: process.env.MSSQL_ENCRYPT === 'true' || false,
-          trustServerCertificate: process.env.MSSQL_TRUST_SERVER_CERTIFICATE !== 'false',
-          
+          trustServerCertificate:
+            process.env.MSSQL_TRUST_SERVER_CERTIFICATE !== 'false',
+
           // Additional Settings
           validateConnection: process.env.MSSQL_VALIDATE_CONNECTION !== 'false',
           enableArithAbort: process.env.MSSQL_ENABLE_ARITH_ABORT !== 'false',
-          
+
           // Connection retry settings
-          maxRetriesOnFailover: Number(process.env.MSSQL_MAX_RETRIES_ON_FAILOVER) || 3,
-          maxRetriesOnTransientErrors: Number(process.env.MSSQL_MAX_RETRIES_ON_TRANSIENT_ERRORS) || 3,
-          
+          maxRetriesOnFailover:
+            Number(process.env.MSSQL_MAX_RETRIES_ON_FAILOVER) || 3,
+          maxRetriesOnTransientErrors:
+            Number(process.env.MSSQL_MAX_RETRIES_ON_TRANSIENT_ERRORS) || 3,
+
           // Performance settings
           packetSize: Number(process.env.MSSQL_PACKET_SIZE) || 4096,
-          
+
           // Application name for monitoring
           appName: process.env.MSSQL_APP_NAME || 'SandboxAPI',
         },
-        
+
         // Legacy options support
         options: {
           encrypt: process.env.MSSQL_ENCRYPT === 'true' || false,
-          trustServerCertificate: process.env.MSSQL_TRUST_SERVER_CERTIFICATE !== 'false'
-        }
+          trustServerCertificate:
+            process.env.MSSQL_TRUST_SERVER_CERTIFICATE !== 'false',
+        },
       });
 
       await this.mssqlDataSource.initialize();
       this.mssqlConnected = true;
-      
+
       // Log connection pool configuration
-      logger.info('Connected to MSSQL with optimized connection pool settings', {
-        poolSize: Number(process.env.MSSQL_POOL_SIZE) || 10,
-        poolMax: Number(process.env.MSSQL_POOL_MAX) || 10,
-        poolMin: Number(process.env.MSSQL_POOL_MIN) || 2,
-        connectionTimeout: Number(process.env.MSSQL_CONNECTION_TIMEOUT_MS) || 15000,
-        requestTimeout: Number(process.env.MSSQL_REQUEST_TIMEOUT_MS) || 15000
-      });
-      
+      logger.info(
+        'Connected to MSSQL with optimized connection pool settings',
+        {
+          poolSize: Number(process.env.MSSQL_POOL_SIZE) || 10,
+          poolMax: Number(process.env.MSSQL_POOL_MAX) || 10,
+          poolMin: Number(process.env.MSSQL_POOL_MIN) || 2,
+          connectionTimeout:
+            Number(process.env.MSSQL_CONNECTION_TIMEOUT_MS) || 15000,
+          requestTimeout: Number(process.env.MSSQL_REQUEST_TIMEOUT_MS) || 15000,
+        }
+      );
+
       return true;
     } catch (err) {
       logger.error(`MSSQL connection error: ${err}`);
@@ -175,13 +201,17 @@ class DBManager {
 
   // Check MSSQL connection status
   public isMSSQLConnected(): boolean {
-    return this.mssqlConnected && this.mssqlDataSource !== null && this.mssqlDataSource.isInitialized;
+    return (
+      this.mssqlConnected &&
+      this.mssqlDataSource !== null &&
+      this.mssqlDataSource.isInitialized
+    );
   }
 
   // Connect to the appropriate database based on DB_TYPE
   public async connect(): Promise<boolean> {
     const dbType = process.env.DB_TYPE || 'mongo';
-    
+
     if (dbType === 'mssql') {
       return this.connectMSSQL();
     } else {
@@ -195,7 +225,7 @@ class DBManager {
       this.mongoConnected = false;
       logger.info('Disconnected from MongoDB');
     }
-    
+
     if (this.mssqlConnected && this.mssqlDataSource) {
       await this.mssqlDataSource.destroy();
       this.mssqlConnected = false;
@@ -208,17 +238,22 @@ class DBManager {
     if (!this.mongoConnected || !mongoose.connection.db) {
       return null;
     }
-    
+
     const connection = mongoose.connection;
     return {
       readyState: connection.readyState,
-      readyStateString: ['disconnected', 'connected', 'connecting', 'disconnecting'][connection.readyState],
+      readyStateString: [
+        'disconnected',
+        'connected',
+        'connecting',
+        'disconnecting',
+      ][connection.readyState],
       host: connection.host,
       port: connection.port,
       name: connection.name,
       // Pool statistics from the underlying driver (may not be available in all versions)
       poolSize: 'available via driver stats',
-      poolConnections: 'available via driver stats'
+      poolConnections: 'available via driver stats',
     };
   }
   // Get MSSQL connection pool statistics
@@ -234,10 +269,10 @@ class DBManager {
         host: options.host || 'unknown',
         port: options.port || 'unknown',
         database: options.database || 'unknown',
-        poolSize: options.poolSize || 'unknown'
+        poolSize: options.poolSize || 'unknown',
       },
       // Additional pool stats if available
-      poolConfiguration: options.extra?.pool || 'Pool config unavailable'
+      poolConfiguration: options.extra?.pool || 'Pool config unavailable',
     };
   }
   // Get comprehensive database health information
@@ -246,12 +281,12 @@ class DBManager {
       timestamp: new Date().toISOString(),
       mongodb: {
         connected: this.isMongoConnected(),
-        stats: this.getMongoPoolStats()
+        stats: this.getMongoPoolStats(),
       },
       mssql: {
         connected: this.isMSSQLConnected(),
-        stats: this.getMSSQLPoolStats()
-      }
+        stats: this.getMSSQLPoolStats(),
+      },
     };
 
     // Test actual connectivity

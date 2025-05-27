@@ -10,6 +10,10 @@ const router = express.Router();
 router.get('/pool-stats', authMiddleware, databaseController.getPoolStatistics);
 
 // POST /api/database/reset-pools - Reset connection pools
-router.post('/reset-pools', authMiddleware, databaseController.resetConnectionPools);
+router.post(
+  '/reset-pools',
+  authMiddleware,
+  databaseController.resetConnectionPools
+);
 
 export default router;

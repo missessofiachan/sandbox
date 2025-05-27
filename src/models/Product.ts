@@ -7,7 +7,7 @@ const productSchema = new Schema<IProduct>({
   price: { type: Number, required: true, min: 0 },
   description: { type: String, trim: true },
   inStock: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now }
+  createdAt: { type: Date, default: Date.now },
 });
 
 export default model<IProduct>('Product', productSchema);

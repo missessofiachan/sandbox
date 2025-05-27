@@ -5,8 +5,12 @@ import { IOrder } from '../types';
 const orderSchema = new Schema<IOrder>({
   products: [{ type: Types.ObjectId, ref: 'Product', required: true }],
   total: { type: Number, required: true, min: 0 },
-  status: { type: String, enum: ['pending', 'completed', 'cancelled'], default: 'pending' },
-  createdAt: { type: Date, default: Date.now }
+  status: {
+    type: String,
+    enum: ['pending', 'completed', 'cancelled'],
+    default: 'pending',
+  },
+  createdAt: { type: Date, default: Date.now },
 });
 
 export default model<IOrder>('Order', orderSchema);

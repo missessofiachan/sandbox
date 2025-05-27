@@ -9,11 +9,11 @@ export const userLoginSchema = Joi.object({
 export const userRegistrationSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(4).required(),
-  role: Joi.string().valid('admin', 'user').default('user')
+  role: Joi.string().valid('admin', 'user').default('user'),
 });
 
 export const userUpdateSchema = Joi.object({
   email: Joi.string().email(),
   password: Joi.string().min(4),
-  role: Joi.string().valid('admin', 'user')
+  role: Joi.string().valid('admin', 'user'),
 }).min(1);

@@ -7,8 +7,13 @@ export class APIError extends Error {
   statusCode: number;
   isOperational: boolean;
   details?: any;
-  
-  constructor(message: string, statusCode: number, isOperational = true, details?: any) {
+
+  constructor(
+    message: string,
+    statusCode: number,
+    isOperational = true,
+    details?: any
+  ) {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = isOperational;
@@ -77,21 +82,26 @@ export class TooManyRequestsError extends APIError {
 }
 
 // Global error handler
-export const errorHandler = (err: Error, req: Request, res: Response, next: NextFunction) => {
+export const errorHandler = (
+  err: Error,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   // Log error with additional request information for debugging
-  logger.error(`Error: ${err.message}`, { 
-    url: req.originalUrl, 
+  logger.error(`Error: ${err.message}`, {
+    url: req.originalUrl,
     method: req.method,
     stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
-    body: req.body
+    body: req.body,
   });
-  
+
   // Default error status and message
   let statusCode = 500;
   let message = 'Internal Server Error';
   let errorDetails = null;
   let isOperational = false;
-    // Handle API errors thrown by our application
+  // Handle API errors thrown by our application
   if (err instanceof APIError) {
     statusCode = err.statusCode;
     message = err.message;
@@ -104,15 +114,15 @@ export const errorHandler = (err: Error, req: Request, res: Response, next: Next
     message = 'Validation Error';
     errorDetails = err.message;
     isOperational = true;
-  } 
-  
+  }
+
   // Handle Mongoose CastError (invalid ObjectId)
   else if (err.name === 'CastError') {
     statusCode = 400;
     message = 'Invalid ID format';
     isOperational = true;
-  } 
-  
+  }
+
   // Handle Mongoose/MongoDB duplicate key error
   else if (err.name === 'MongoServerError' && (err as any).code === 11000) {
     statusCode = 409;
@@ -120,21 +130,21 @@ export const errorHandler = (err: Error, req: Request, res: Response, next: Next
     isOperational = true;
     errorDetails = 'A record with the same unique key already exists';
   }
-  
+
   // Handle MongoDB network errors
   else if (err.name === 'MongoNetworkError') {
     statusCode = 503;
     message = 'Database connection error';
     isOperational = true;
   }
-  
+
   // Handle JWT errors
   else if (err.name === 'JsonWebTokenError') {
     statusCode = 401;
     message = 'Invalid token';
     isOperational = true;
-  } 
-  
+  }
+
   // Handle JWT expiration
   else if (err.name === 'TokenExpiredError') {
     statusCode = 401;
@@ -144,30 +154,34 @@ export const errorHandler = (err: Error, req: Request, res: Response, next: Next
 
   // Determine if we should include the stack trace
   const isDevelopment = process.env.NODE_ENV === 'development';
-  
+
   // Format the response
   const errorResponse: any = {
     status: 'error',
-    message
+    message,
   };
-  
+
   // Include additional details in development or for operational errors
   if (isDevelopment || isOperational) {
     if (errorDetails) {
       errorResponse.details = errorDetails;
     }
-    
+
     if (isDevelopment && !isOperational) {
       errorResponse.stack = err.stack;
     }
   }
-  
+
   // Send the error response
   res.status(statusCode).json(errorResponse);
 };
 
 // Handle 404 errors for undefined routes
-export const notFoundHandler = (req: Request, res: Response, next: NextFunction) => {
+export const notFoundHandler = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const error = new NotFoundError(`Not found - ${req.originalUrl}`);
   next(error);
 };

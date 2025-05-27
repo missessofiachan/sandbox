@@ -1,5 +1,11 @@
-import e from "express";
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from "typeorm";
+import e from 'express';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class Order {
@@ -9,10 +15,10 @@ export class Order {
   @Column()
   customerName!: string;
 
-  @Column("decimal", { precision: 18, scale: 2 })
+  @Column('decimal', { precision: 18, scale: 2 })
   totalAmount!: number;
 
-  @Column("text")
+  @Column('text')
   products!: string[];
 
   @CreateDateColumn()
@@ -20,5 +26,5 @@ export class Order {
 
   @UpdateDateColumn()
   updatedAt!: Date;
-}   
+}
 export default Order;

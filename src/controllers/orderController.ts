@@ -6,7 +6,11 @@ import OrderRepositoryMSSQL from '../repositories/OrderRepositoryMSSQL';
 import { connectMSSQL } from '../connectMSSQL';
 import { IOrder } from '../types';
 import { orderSchema, orderUpdateSchema } from '../validation/orderValidation';
-import { asyncHandler, NotFoundError, BadRequestError } from '../middleware/errorHandlerMiddleware';
+import {
+  asyncHandler,
+  NotFoundError,
+  BadRequestError,
+} from '../middleware/errorHandlerMiddleware';
 import { clearCache, invalidateCache } from '../middleware/cacheMiddleware';
 
 // Dynamic repository selection based on DB_TYPE
@@ -38,58 +42,64 @@ function getRepository(): IOrderRepository {
 
 export const createOrder = asyncHandler(async (req: Request, res: Response) => {
   const order = await getRepository().create(req.body);
-  
+
   // Invalidate orders list cache
   invalidateCache('orders');
-  
+
   res.status(201).json(order);
 });
 
-export const getAllOrders = asyncHandler(async (_req: Request, res: Response) => {
-  const orders = await getRepository().findAll();
-  res.json(orders);
-});
-
-export const getOrderById = asyncHandler(async (req: Request, res: Response) => {
-  const order = await getRepository().findById(req.params.id);
-  if (!order) {
-    throw new NotFoundError('Order not found');
+export const getAllOrders = asyncHandler(
+  async (_req: Request, res: Response) => {
+    const orders = await getRepository().findAll();
+    res.json(orders);
   }
-  res.json(order);
-});
+);
+
+export const getOrderById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const order = await getRepository().findById(req.params.id);
+    if (!order) {
+      throw new NotFoundError('Order not found');
+    }
+    res.json(order);
+  }
+);
 
 export const updateOrder = asyncHandler(async (req: Request, res: Response) => {
   const order = await getRepository().update(req.params.id, req.body);
   if (!order) {
     throw new NotFoundError('Order not found');
   }
-  
+
   // Invalidate both the list cache and the individual order cache
   invalidateCache('orders', req.params.id);
-  
+
   res.json(order);
 });
 
-export const partialUpdateOrder = asyncHandler(async (req: Request, res: Response) => {
-  const order = await getRepository().partialUpdate(req.params.id, req.body);
-  if (!order) {
-    throw new NotFoundError('Order not found');
+export const partialUpdateOrder = asyncHandler(
+  async (req: Request, res: Response) => {
+    const order = await getRepository().partialUpdate(req.params.id, req.body);
+    if (!order) {
+      throw new NotFoundError('Order not found');
+    }
+
+    // Invalidate both the list cache and the individual order cache
+    invalidateCache('orders', req.params.id);
+
+    res.json(order);
   }
-  
-  // Invalidate both the list cache and the individual order cache
-  invalidateCache('orders', req.params.id);
-  
-  res.json(order);
-});
+);
 
 export const deleteOrder = asyncHandler(async (req: Request, res: Response) => {
   const order = await getRepository().delete(req.params.id);
   if (!order) {
     throw new NotFoundError('Order not found');
   }
-  
+
   // Invalidate both the list cache and the individual order cache
   invalidateCache('orders', req.params.id);
-  
+
   res.json({ message: 'Order deleted successfully' });
 });

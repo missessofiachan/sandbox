@@ -9,21 +9,24 @@ import { BadRequestError } from './errorHandlerMiddleware';
  * @param property The request property to validate (body, params, query)
  * @returns Express middleware function
  */
-export const validateRequest = (schema: Schema, property: 'body' | 'params' | 'query' = 'body') => {
+export const validateRequest = (
+  schema: Schema,
+  property: 'body' | 'params' | 'query' = 'body'
+) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    const { error } = schema.validate(req[property], { 
+    const { error } = schema.validate(req[property], {
       abortEarly: false,
-      stripUnknown: true // remove unknown elements from objects
+      stripUnknown: true, // remove unknown elements from objects
     });
-    
+
     if (!error) {
       next();
     } else {
-      const details = error.details.map(detail => ({
+      const details = error.details.map((detail) => ({
         message: detail.message,
-        path: detail.path
+        path: detail.path,
       }));
-      
+
       next(new BadRequestError('Validation failed').withDetails(details));
     }
   };

@@ -17,7 +17,10 @@ import userRoutes from './routes/userRoutes';
 import cacheRoutes from './routes/cacheRoutes';
 import databaseRoutes from './routes/databaseRoutes';
 import corsMiddleware from './middleware/corsMiddleware';
-import { errorHandler, notFoundHandler } from './middleware/errorHandlerMiddleware';
+import {
+  errorHandler,
+  notFoundHandler,
+} from './middleware/errorHandlerMiddleware';
 import { logger, requestLogger } from './utils/logger';
 
 // Load environment variables
@@ -64,11 +67,13 @@ app.use(corsMiddleware());
 
 // Configure rate limiting middleware
 const apiLimiter = rateLimit({
-    windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-    max: Number(process.env.RATE_LIMIT_MAX) || 100, // limit each IP to 100 requests per windowMs
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-    message: { error: 'Too many requests from this IP, please try again after 15 minutes' }
+  windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
+  max: Number(process.env.RATE_LIMIT_MAX) || 100, // limit each IP to 100 requests per windowMs
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: {
+    error: 'Too many requests from this IP, please try again after 15 minutes',
+  },
 });
 
 // Apply rate limiting to API routes if enabled
@@ -84,14 +89,16 @@ if (process.env.ENABLE_RATE_LIMIT === 'true') {
 app.get('/health', async (req, res) => {
   try {
     const dbType = process.env.DB_TYPE || 'mongo';
-    
+
     // Get comprehensive database health information
     const databaseHealth = await dbManager.getDatabaseHealth();
-    
+
     // Determine overall status
     let dbStatus = 'unknown';
     if (dbType === 'mongo') {
-      dbStatus = databaseHealth.mongodb.connected ? 'connected' : 'disconnected';
+      dbStatus = databaseHealth.mongodb.connected
+        ? 'connected'
+        : 'disconnected';
     } else {
       dbStatus = databaseHealth.mssql.connected ? 'connected' : 'disconnected';
     }
@@ -104,13 +111,19 @@ app.get('/health', async (req, res) => {
       database: databaseHealth,
       connectionPools: {
         mongodb: databaseHealth.mongodb.stats,
-        mssql: databaseHealth.mssql.stats
+        mssql: databaseHealth.mssql.stats,
       },
       memory: {
-        used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024 * 100) / 100,
-        total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024 * 100) / 100,
-        external: Math.round(process.memoryUsage().external / 1024 / 1024 * 100) / 100,
-        rss: Math.round(process.memoryUsage().rss / 1024 / 1024 * 100) / 100
+        used:
+          Math.round((process.memoryUsage().heapUsed / 1024 / 1024) * 100) /
+          100,
+        total:
+          Math.round((process.memoryUsage().heapTotal / 1024 / 1024) * 100) /
+          100,
+        external:
+          Math.round((process.memoryUsage().external / 1024 / 1024) * 100) /
+          100,
+        rss: Math.round((process.memoryUsage().rss / 1024 / 1024) * 100) / 100,
       },
       timestamp: new Date().toISOString(),
     };
@@ -151,9 +164,9 @@ app.use(errorHandler);
 // Starting the server
 const PORT: number = Number(process.env.PORT) || 3000;
 app.listen(PORT, () => {
-    logger.info(`Server is running on http://localhost:${PORT}`);
-    logger.info(`Environment: ${process.env.NODE_ENV}`);
-    logger.info(`Database type: ${process.env.DB_TYPE}`);
+  logger.info(`Server is running on http://localhost:${PORT}`);
+  logger.info(`Environment: ${process.env.NODE_ENV}`);
+  logger.info(`Database type: ${process.env.DB_TYPE}`);
 });
 
 export default app;

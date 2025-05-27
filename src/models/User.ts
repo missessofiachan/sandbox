@@ -5,7 +5,7 @@ export interface IUserModel extends Document {
   email: string;
   password: string;
   role: 'admin' | 'user';
-  createdAt: Date; 
+  createdAt: Date;
 }
 
 const userSchema = new Schema<IUserModel>({
@@ -15,24 +15,27 @@ const userSchema = new Schema<IUserModel>({
     unique: true,
     trim: true,
     lowercase: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email address']
+    match: [
+      /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+      'Please enter a valid email address',
+    ],
   },
   password: {
     type: String,
     required: [true, 'Password is required'],
-    minlength: [4, 'Password must be at least 4 characters long']
+    minlength: [4, 'Password must be at least 4 characters long'],
   },
   role: {
     type: String,
     enum: ['admin', 'user'],
     default: 'user',
-    required: true
+    required: true,
   },
   createdAt: {
     type: Date,
     default: Date.now,
-    index: true
-  }
+    index: true,
+  },
 });
 
 export default model<IUserModel>('User', userSchema);

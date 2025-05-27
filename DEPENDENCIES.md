@@ -64,7 +64,7 @@ This document lists all major dependencies used in this project, where they are 
 - **Where:** connectMSSQL.ts, MSSQL repositories
 - **Why:** Connects to Microsoft SQL Server for data storage and retrieval.
 
-## 13. @types/*
+## 13. @types/\*
 
 - **Where:** Dev dependencies, throughout TypeScript code
 - **Why:** Provides TypeScript type definitions for libraries like express, mongoose, winston, helmet, etc.

@@ -8,20 +8,20 @@ import { getCacheStats } from '../middleware/cacheMiddleware';
  */
 export const getCacheStatistics = (req: Request, res: Response): void => {
   const stats = getCacheStats();
-  
+
   // Prepare a summarized view of popular resources
   const popularResources = Object.entries(stats.popular)
     .sort(([, countA], [, countB]) => countB - countA)
     .slice(0, 10) // Show only top 10 most popular resources
     .reduce((acc, [key, count]) => ({ ...acc, [key]: count }), {});
-  
+
   res.json({
     hits: stats.hits,
     misses: stats.misses,
     hitRatio: stats.hits / (stats.hits + stats.misses || 1),
     entries: stats.entries,
-    sizeInMB: Math.round(stats.size / 1024 / 1024 * 100) / 100,
-    popularResources
+    sizeInMB: Math.round((stats.size / 1024 / 1024) * 100) / 100,
+    popularResources,
   });
 };
 
@@ -39,5 +39,5 @@ export const clearEntireCache = (_req: Request, res: Response): void => {
 
 export default {
   getCacheStatistics,
-  clearEntireCache
+  clearEntireCache,
 };

@@ -4,8 +4,15 @@ import IProductRepository from '../repositories/IProductRepository';
 import { ProductRepositoryMongo } from '../repositories/ProductRepositoryMongo';
 import { ProductRepositoryMSSQL } from '../repositories/ProductRepositoryMSSQL';
 import { connectMSSQL } from '../connectMSSQL';
-import { productSchema, productUpdateSchema } from '../validation/productValidation';
-import { asyncHandler, NotFoundError, BadRequestError } from '../middleware/errorHandlerMiddleware';
+import {
+  productSchema,
+  productUpdateSchema,
+} from '../validation/productValidation';
+import {
+  asyncHandler,
+  NotFoundError,
+  BadRequestError,
+} from '../middleware/errorHandlerMiddleware';
 import { clearCache, invalidateCache } from '../middleware/cacheMiddleware';
 import { logger } from '../utils/logger';
 
@@ -34,60 +41,75 @@ function getRepository(): IProductRepository {
   return productRepo;
 }
 
-export const createProduct = asyncHandler(async (req: Request, res: Response) => {
-  const product = await getRepository().create(req.body);
-  
-  // Invalidate the products list cache
-  invalidateCache('products');
-  
-  res.status(201).json(product);
-});
+export const createProduct = asyncHandler(
+  async (req: Request, res: Response) => {
+    const product = await getRepository().create(req.body);
 
-export const getAllProducts = asyncHandler(async (_req: Request, res: Response) => {
-  const products = await getRepository().findAll();
-  res.json(products);
-});
+    // Invalidate the products list cache
+    invalidateCache('products');
 
-export const getProductById = asyncHandler(async (req: Request, res: Response) => {
-  const product = await getRepository().findById(req.params.id);
-  if (!product) {
-    throw new NotFoundError('Product not found');
+    res.status(201).json(product);
   }
-  res.json(product);
-});
+);
 
-export const updateProduct = asyncHandler(async (req: Request, res: Response) => {
-  const product = await getRepository().update(req.params.id, req.body);
-  if (!product) {
-    throw new NotFoundError('Product not found');
+export const getAllProducts = asyncHandler(
+  async (_req: Request, res: Response) => {
+    const products = await getRepository().findAll();
+    res.json(products);
   }
-  
-  // Invalidate both the list cache and the individual product cache
-  invalidateCache('products', req.params.id);
-  
-  res.json(product);
-});
+);
 
-export const partialUpdateProduct = asyncHandler(async (req: Request, res: Response) => {
-  const product = await getRepository().partialUpdate(req.params.id, req.body);
-  if (!product) {
-    throw new NotFoundError('Product not found');
+export const getProductById = asyncHandler(
+  async (req: Request, res: Response) => {
+    const product = await getRepository().findById(req.params.id);
+    if (!product) {
+      throw new NotFoundError('Product not found');
+    }
+    res.json(product);
   }
-  
-  // Invalidate both the list cache and the individual product cache
-  invalidateCache('products', req.params.id);
-  
-  res.json(product);
-});
+);
 
-export const deleteProduct = asyncHandler(async (req: Request, res: Response) => {
-  const product = await getRepository().delete(req.params.id);
-  if (!product) {
-    throw new NotFoundError('Product not found');
+export const updateProduct = asyncHandler(
+  async (req: Request, res: Response) => {
+    const product = await getRepository().update(req.params.id, req.body);
+    if (!product) {
+      throw new NotFoundError('Product not found');
+    }
+
+    // Invalidate both the list cache and the individual product cache
+    invalidateCache('products', req.params.id);
+
+    res.json(product);
   }
-  
-  // Invalidate both the list cache and the individual product cache
-  invalidateCache('products', req.params.id);
-  
-  res.json({ message: 'Product deleted successfully' });
-});
+);
+
+export const partialUpdateProduct = asyncHandler(
+  async (req: Request, res: Response) => {
+    const product = await getRepository().partialUpdate(
+      req.params.id,
+      req.body
+    );
+    if (!product) {
+      throw new NotFoundError('Product not found');
+    }
+
+    // Invalidate both the list cache and the individual product cache
+    invalidateCache('products', req.params.id);
+
+    res.json(product);
+  }
+);
+
+export const deleteProduct = asyncHandler(
+  async (req: Request, res: Response) => {
+    const product = await getRepository().delete(req.params.id);
+    if (!product) {
+      throw new NotFoundError('Product not found');
+    }
+
+    // Invalidate both the list cache and the individual product cache
+    invalidateCache('products', req.params.id);
+
+    res.json({ message: 'Product deleted successfully' });
+  }
+);

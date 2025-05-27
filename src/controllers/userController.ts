@@ -1,7 +1,11 @@
 // Controller for User resource (registration and CRUD)
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import { asyncHandler, NotFoundError, BadRequestError } from '../middleware/errorHandlerMiddleware';
+import {
+  asyncHandler,
+  NotFoundError,
+  BadRequestError,
+} from '../middleware/errorHandlerMiddleware';
 import IUserRepository from '../repositories/IUserRepository';
 import { UserRepositoryMongo } from '../repositories/UserRepositoryMongo';
 import UserRepositoryMSSQL from '../repositories/UserRepositoryMSSQL';
@@ -40,19 +44,24 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
   if (existing) {
     throw new BadRequestError('User already exists').withDetails({
       field: 'email',
-      value: req.body.email
+      value: req.body.email,
     });
   }
   // Hash password before saving
   const hashedPassword = await bcrypt.hash(req.body.password, 10);
-  const user = await getRepository().create({ ...req.body, password: hashedPassword });
+  const user = await getRepository().create({
+    ...req.body,
+    password: hashedPassword,
+  });
   res.status(201).json(user);
 });
 
-export const getAllUsers = asyncHandler(async (_req: Request, res: Response) => {
-  const users = await getRepository().findAll();
-  res.json(users);
-});
+export const getAllUsers = asyncHandler(
+  async (_req: Request, res: Response) => {
+    const users = await getRepository().findAll();
+    res.json(users);
+  }
+);
 
 export const getUserById = asyncHandler(async (req: Request, res: Response) => {
   const user = await getRepository().findById(req.params.id);
@@ -75,17 +84,19 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
   res.json(user);
 });
 
-export const partialUpdateUser = asyncHandler(async (req: Request, res: Response) => {
-  let updateData = { ...req.body };
-  if (updateData.password) {
-    updateData.password = await bcrypt.hash(updateData.password, 10);
+export const partialUpdateUser = asyncHandler(
+  async (req: Request, res: Response) => {
+    let updateData = { ...req.body };
+    if (updateData.password) {
+      updateData.password = await bcrypt.hash(updateData.password, 10);
+    }
+    const user = await getRepository().partialUpdate(req.params.id, updateData);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+    res.json(user);
   }
-  const user = await getRepository().partialUpdate(req.params.id, updateData);
-  if (!user) {
-    throw new NotFoundError('User not found');
-  }
-  res.json(user);
-});
+);
 
 export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
   const user = await getRepository().delete(req.params.id);

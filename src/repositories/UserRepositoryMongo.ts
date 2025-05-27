@@ -15,7 +15,11 @@ export class UserRepositoryMongo implements IUserRepository {
     return User.findByIdAndUpdate(id, data, { new: true, runValidators: true });
   }
   async partialUpdate(id: string, data: any) {
-    return User.findByIdAndUpdate(id, { $set: data }, { new: true, runValidators: true });
+    return User.findByIdAndUpdate(
+      id,
+      { $set: data },
+      { new: true, runValidators: true }
+    );
   }
   async delete(id: string) {
     return User.findByIdAndDelete(id);

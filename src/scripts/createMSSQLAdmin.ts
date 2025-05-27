@@ -10,7 +10,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const adminUser = {
   email: 'admin@example.com',
   password: '$2b$10$4or1EcX/cAdDwxpQpBlmNOE.wzn.ikNUncw.hATVUFyW9hjUh7/92',
-  role: "admin" as "admin", // Explicitly type as the union literal
+  role: 'admin' as 'admin', // Explicitly type as the union literal
   createdAt: new Date('2025-05-10T00:00:00Z'),
 };
 
@@ -25,8 +25,8 @@ const AppDataSource = new DataSource({
   synchronize: false,
   options: { encrypt: false },
   extra: {
-    server: process.env.MSSQL_HOST
-  }
+    server: process.env.MSSQL_HOST,
+  },
 });
 
 async function insertAdmin(): Promise<void> {
@@ -49,4 +49,3 @@ async function insertAdmin(): Promise<void> {
 }
 
 insertAdmin();
-

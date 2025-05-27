@@ -1,317 +1,329 @@
 {
-	"info": {
-		"_postman_id": "product-api-role-based-id",
-		"name": "Product CRUD API (Role-Based)",
-		"description": "Postman collection to test full CRUD for Product API with role-based access.",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"item": [
-		{
-			"name": "Login as Admin",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"type": "text/javascript",
-						"exec": [
-							"pm.test('Status code is 200 or 503', function() { pm.expect([200,503]).to.include(pm.response.code); });",
-							"if (pm.response.code === 503) { pm.test('DB unavailable message', function() { var jsonData = pm.response.json(); pm.expect(jsonData.error).to.match(/database unavailable/i); }); } else { var jsonData = pm.response.json(); if (jsonData.token) { pm.environment.set('adminToken', jsonData.token); } }"
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [ { "key": "Content-Type", "value": "application/json" } ],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}"
-				},
-				"url": {
-					"raw": "http://localhost:3000/api/auth/login",
-					"protocol": "http",
-					"host": ["localhost"],
-					"port": "3000",
-					"path": ["api", "auth", "login"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Create Product (Admin Only)",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"type": "text/javascript",
-						"exec": [
-							"pm.test('Status code is 201', function() { pm.response.to.have.status(201); });",
-							"var jsonData = pm.response.json();",
-							"pm.environment.set('productId', jsonData._id);"
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{adminToken}}" } ],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"name\": \"Test Product\",\n  \"price\": 19.99,\n  \"description\": \"A test product\",\n  \"inStock\": true\n}"
-				},
-				"url": {
-					"raw": "http://localhost:3000/api/products",
-					"protocol": "http",
-					"host": ["localhost"],
-					"port": "3000",
-					"path": ["api", "products"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get All Products (Public)",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"type": "text/javascript",
-						"exec": [
-							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
-							"pm.test('Response is JSON array', function() { var jsonData = pm.response.json(); pm.expect(jsonData).to.be.an('array'); });",
-							"pm.test('Cache header is present', function() { pm.expect(pm.response.headers.has('X-Cache')).to.be.true; });",
-							"pm.test('Cache-Control header is present', function() { pm.expect(pm.response.headers.has('Cache-Control')).to.be.true; });",
-							"",
-							"// Store the cache status for verification in subsequent tests",
-							"var cacheStatus = pm.response.headers.get('X-Cache');",
-							"pm.globals.set('firstRequestCacheStatus', cacheStatus);",
-							"",
-							"// Make a second request to the same endpoint to verify caching",
-							"setTimeout(() => {",
-							"    pm.sendRequest({",
-							"        url: 'http://localhost:3000/api/products',",
-							"        method: 'GET'",
-							"    }, function (err, res) {",
-							"        pm.test('Second request should be a cache HIT', function() {",
-							"            pm.expect(res.headers.get('X-Cache')).to.eql('HIT');",
-							"        });",
-							"    });",
-							"}, 100);"
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:3000/api/products",
-					"protocol": "http",
-					"host": ["localhost"],
-					"port": "3000",
-					"path": ["api", "products"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Product By ID (Public)",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"type": "text/javascript",
-						"exec": [
-							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
-							"pm.test('Response has correct product ID', function() { var jsonData = pm.response.json(); pm.expect(jsonData._id).to.eql(pm.environment.get('productId')); });",
-							"pm.test('Cache header is present', function() { pm.expect(pm.response.headers.has('X-Cache')).to.be.true; });",
-							"pm.test('Cache-Control header is present', function() { pm.expect(pm.response.headers.has('Cache-Control')).to.be.true; });"
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "http://localhost:3000/api/products/{{productId}}",
-					"protocol": "http",
-					"host": ["localhost"],
-					"port": "3000",
-					"path": ["api", "products", "{{productId}}"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Update Product (Admin Only)",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"type": "text/javascript",
-						"exec": [
-							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
-							"pm.test('Name updated correctly', function() { var jsonData = pm.response.json(); pm.expect(jsonData.name).to.eql('Updated Product'); });",
-							"",
-							"// Test cache invalidation by making a GET request after update",
-							"setTimeout(() => {",
-							"    pm.sendRequest({",
-							"        url: `http://localhost:3000/api/products/${pm.environment.get('productId')}`,",
-							"        method: 'GET'",
-							"    }, function (err, res) {",
-							"        pm.test('GET after update shows cache MISS', function() {",
-							"            pm.expect(res.headers.get('X-Cache')).to.eql('MISS');",
-							"        });",
-							"    });",
-							"}, 100);"
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "PUT",
-				"header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{adminToken}}" } ],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"name\": \"Updated Product\",\n  \"price\": 29.99,\n  \"description\": \"Updated description\",\n  \"inStock\": false\n}"
-				},
-				"url": {
-					"raw": "http://localhost:3000/api/products/{{productId}}",
-					"protocol": "http",
-					"host": ["localhost"],
-					"port": "3000",
-					"path": ["api", "products", "{{productId}}"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Delete Product (Admin Only)",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"type": "text/javascript",
-						"exec": [
-							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
-							"pm.test('Deletion returns message', function() { var jsonData = pm.response.json(); pm.expect(jsonData.message).to.eql('Product deleted successfully'); });"
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [ { "key": "Authorization", "value": "Bearer {{adminToken}}" } ],
-				"url": {
-					"raw": "http://localhost:3000/api/products/{{productId}}",
-					"protocol": "http",
-					"host": ["localhost"],
-					"port": "3000",
-					"path": ["api", "products", "{{productId}}"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get Cache Statistics (Admin Only)",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"type": "text/javascript",
-						"exec": [
-							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
-							"pm.test('Cache stats include hits', function() { var jsonData = pm.response.json(); pm.expect(jsonData.hits).to.be.a('number'); });",
-							"pm.test('Cache stats include misses', function() { var jsonData = pm.response.json(); pm.expect(jsonData.misses).to.be.a('number'); });",
-							"pm.test('Cache stats include size', function() { var jsonData = pm.response.json(); pm.expect(jsonData.sizeInMB).to.be.a('number'); });",
-							"pm.test('Cache stats include popular resources', function() { var jsonData = pm.response.json(); pm.expect(jsonData.popularResources).to.be.an('object'); });"
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [ { "key": "Authorization", "value": "Bearer {{adminToken}}" } ],
-				"url": {
-					"raw": "http://localhost:3000/api/cache/stats",
-					"protocol": "http",
-					"host": ["localhost"],
-					"port": "3000",
-					"path": ["api", "cache", "stats"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Clear Cache (Admin Only)",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"type": "text/javascript",
-						"exec": [
-							"pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
-							"pm.test('Cache cleared message', function() { var jsonData = pm.response.json(); pm.expect(jsonData.message).to.match(/cleared/i); });",
-							"",
-							"// Verify cache has been cleared by checking the subsequent GET request",
-							"setTimeout(() => {",
-							"    pm.sendRequest({",
-							"        url: 'http://localhost:3000/api/products',",
-							"        method: 'GET'",
-							"    }, function (err, res) {",
-							"        pm.test('GET after cache clear shows MISS', function() {",
-							"            pm.expect(res.headers.get('X-Cache')).to.eql('MISS');",
-							"        });",
-							"    });",
-							"}, 100);"
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "DELETE",
-				"header": [ { "key": "Authorization", "value": "Bearer {{adminToken}}" } ],
-				"url": {
-					"raw": "http://localhost:3000/api/cache",
-					"protocol": "http",
-					"host": ["localhost"],
-					"port": "3000",
-					"path": ["api", "cache"]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Login as User",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"type": "text/javascript",
-						"exec": [
-							"pm.test('Status code is 200 or 503', function() { pm.expect([200,503]).to.include(pm.response.code); });",
-							"if (pm.response.code === 503) { pm.test('DB unavailable message', function() { var jsonData = pm.response.json(); pm.expect(jsonData.error).to.match(/database unavailable/i); }); } else { var jsonData = pm.response.json(); if (jsonData.token) { pm.environment.set('userToken', jsonData.token); } }"
-						]
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [ { "key": "Content-Type", "value": "application/json" } ],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"user123\"\n}"
-				},
-				"url": {
-					"raw": "http://localhost:3000/api/auth/login",
-					"protocol": "http",
-					"host": ["localhost"],
-					"port": "3000",
-					"path": ["api", "auth", "login"]
-				}
-			},
-			"response": []
-		}
-	]
+  "info": {
+    "_postman_id": "product-api-role-based-id",
+    "name": "Product CRUD API (Role-Based)",
+    "description": "Postman collection to test full CRUD for Product API with role-based access.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Login as Admin",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200 or 503', function() { pm.expect([200,503]).to.include(pm.response.code); });",
+              "if (pm.response.code === 503) { pm.test('DB unavailable message', function() { var jsonData = pm.response.json(); pm.expect(jsonData.error).to.match(/database unavailable/i); }); } else { var jsonData = pm.response.json(); if (jsonData.token) { pm.environment.set('adminToken', jsonData.token); } }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/auth/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "auth", "login"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Product (Admin Only)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 201', function() { pm.response.to.have.status(201); });",
+              "var jsonData = pm.response.json();",
+              "pm.environment.set('productId', jsonData._id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Test Product\",\n  \"price\": 19.99,\n  \"description\": \"A test product\",\n  \"inStock\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/products",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "products"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Products (Public)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+              "pm.test('Response is JSON array', function() { var jsonData = pm.response.json(); pm.expect(jsonData).to.be.an('array'); });",
+              "pm.test('Cache header is present', function() { pm.expect(pm.response.headers.has('X-Cache')).to.be.true; });",
+              "pm.test('Cache-Control header is present', function() { pm.expect(pm.response.headers.has('Cache-Control')).to.be.true; });",
+              "",
+              "// Store the cache status for verification in subsequent tests",
+              "var cacheStatus = pm.response.headers.get('X-Cache');",
+              "pm.globals.set('firstRequestCacheStatus', cacheStatus);",
+              "",
+              "// Make a second request to the same endpoint to verify caching",
+              "setTimeout(() => {",
+              "    pm.sendRequest({",
+              "        url: 'http://localhost:3000/api/products',",
+              "        method: 'GET'",
+              "    }, function (err, res) {",
+              "        pm.test('Second request should be a cache HIT', function() {",
+              "            pm.expect(res.headers.get('X-Cache')).to.eql('HIT');",
+              "        });",
+              "    });",
+              "}, 100);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/products",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "products"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Product By ID (Public)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+              "pm.test('Response has correct product ID', function() { var jsonData = pm.response.json(); pm.expect(jsonData._id).to.eql(pm.environment.get('productId')); });",
+              "pm.test('Cache header is present', function() { pm.expect(pm.response.headers.has('X-Cache')).to.be.true; });",
+              "pm.test('Cache-Control header is present', function() { pm.expect(pm.response.headers.has('Cache-Control')).to.be.true; });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/products/{{productId}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "products", "{{productId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Product (Admin Only)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+              "pm.test('Name updated correctly', function() { var jsonData = pm.response.json(); pm.expect(jsonData.name).to.eql('Updated Product'); });",
+              "",
+              "// Test cache invalidation by making a GET request after update",
+              "setTimeout(() => {",
+              "    pm.sendRequest({",
+              "        url: `http://localhost:3000/api/products/${pm.environment.get('productId')}`,",
+              "        method: 'GET'",
+              "    }, function (err, res) {",
+              "        pm.test('GET after update shows cache MISS', function() {",
+              "            pm.expect(res.headers.get('X-Cache')).to.eql('MISS');",
+              "        });",
+              "    });",
+              "}, 100);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Updated Product\",\n  \"price\": 29.99,\n  \"description\": \"Updated description\",\n  \"inStock\": false\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/products/{{productId}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "products", "{{productId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Product (Admin Only)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+              "pm.test('Deletion returns message', function() { var jsonData = pm.response.json(); pm.expect(jsonData.message).to.eql('Product deleted successfully'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/products/{{productId}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "products", "{{productId}}"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Cache Statistics (Admin Only)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+              "pm.test('Cache stats include hits', function() { var jsonData = pm.response.json(); pm.expect(jsonData.hits).to.be.a('number'); });",
+              "pm.test('Cache stats include misses', function() { var jsonData = pm.response.json(); pm.expect(jsonData.misses).to.be.a('number'); });",
+              "pm.test('Cache stats include size', function() { var jsonData = pm.response.json(); pm.expect(jsonData.sizeInMB).to.be.a('number'); });",
+              "pm.test('Cache stats include popular resources', function() { var jsonData = pm.response.json(); pm.expect(jsonData.popularResources).to.be.an('object'); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/cache/stats",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "cache", "stats"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Clear Cache (Admin Only)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200', function() { pm.response.to.have.status(200); });",
+              "pm.test('Cache cleared message', function() { var jsonData = pm.response.json(); pm.expect(jsonData.message).to.match(/cleared/i); });",
+              "",
+              "// Verify cache has been cleared by checking the subsequent GET request",
+              "setTimeout(() => {",
+              "    pm.sendRequest({",
+              "        url: 'http://localhost:3000/api/products',",
+              "        method: 'GET'",
+              "    }, function (err, res) {",
+              "        pm.test('GET after cache clear shows MISS', function() {",
+              "            pm.expect(res.headers.get('X-Cache')).to.eql('MISS');",
+              "        });",
+              "    });",
+              "}, 100);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{adminToken}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/cache",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "cache"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login as User",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status code is 200 or 503', function() { pm.expect([200,503]).to.include(pm.response.code); });",
+              "if (pm.response.code === 503) { pm.test('DB unavailable message', function() { var jsonData = pm.response.json(); pm.expect(jsonData.error).to.match(/database unavailable/i); }); } else { var jsonData = pm.response.json(); if (jsonData.token) { pm.environment.set('userToken', jsonData.token); } }"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"user123\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/auth/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "auth", "login"]
+        }
+      },
+      "response": []
+    }
+  ]
 }

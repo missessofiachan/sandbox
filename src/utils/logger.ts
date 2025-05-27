@@ -34,18 +34,14 @@ winston.addColors(colors);
 const consoleFormat = format.combine(
   format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
   format.colorize({ all: true }),
-  format.printf(
-    (info) => `${info.timestamp} [${info.level}]: ${info.message}`,
-  ),
+  format.printf((info) => `${info.timestamp} [${info.level}]: ${info.message}`)
 );
 
 // Define format for file logs (no colors, but with metadata)
 const fileFormat = format.combine(
   format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-  format.printf(
-    (info) => `${info.timestamp} [${info.level}]: ${info.message}`,
-  ),
-  format.json(),
+  format.printf((info) => `${info.timestamp} [${info.level}]: ${info.message}`),
+  format.json()
 );
 
 // Create the logs directory if it doesn't exist
@@ -80,12 +76,12 @@ const logger = winston.createLogger({
 // HTTP request logger - use this for middleware
 const requestLogger = (req: Request, res: Response, next: NextFunction) => {
   const startTime = Date.now();
-  
+
   // Log when the response finishes
   res.on('finish', () => {
     const responseTime = Date.now() - startTime;
     const logMessage = `${req.method} ${req.originalUrl} ${res.statusCode} - ${responseTime}ms`;
-    
+
     // Set log level based on status code
     if (res.statusCode >= 500) {
       logger.error(logMessage);
@@ -95,7 +91,7 @@ const requestLogger = (req: Request, res: Response, next: NextFunction) => {
       logger.http(logMessage);
     }
   });
-  
+
   next();
 };
 

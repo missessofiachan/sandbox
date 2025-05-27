@@ -19,9 +19,17 @@ async function createAdmin() {
     console.log('Admin user already exists:', email);
     process.exit(0);
   }
-  await User.create({ email, password: hashed, role: 'admin', createdAt: new Date() });
+  await User.create({
+    email,
+    password: hashed,
+    role: 'admin',
+    createdAt: new Date(),
+  });
   console.log('Admin user created:', email);
   process.exit(0);
 }
 
-createAdmin().catch(e => { console.error(e); process.exit(1); });
+createAdmin().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

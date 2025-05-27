@@ -1,8 +1,8 @@
-import { Repository } from "typeorm";
-import User from "../entities/user";
-import IUserRepository from "./IUserRepository";
-import { dbManager } from "../database/dbManager";
-import { logger } from "../utils/logger";
+import { Repository } from 'typeorm';
+import User from '../entities/user';
+import IUserRepository from './IUserRepository';
+import { dbManager } from '../database/dbManager';
+import { logger } from '../utils/logger';
 
 class UserRepositoryMSSQL implements IUserRepository {
   private repo: Repository<User>;
