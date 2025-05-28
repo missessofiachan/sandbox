@@ -95,4 +95,13 @@ const requestLogger = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
+// Feature flag utility
+export function isFeatureEnabled(flag: string): boolean {
+  const value = process.env[flag];
+  if (typeof value === 'string') {
+    return value.toLowerCase() === 'true';
+  }
+  return false;
+}
+
 export { logger, requestLogger };

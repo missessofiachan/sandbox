@@ -21,28 +21,28 @@ import {
   errorHandler,
   notFoundHandler,
 } from './middleware/errorHandlerMiddleware';
-import { logger, requestLogger } from './utils/logger';
+import { logger, requestLogger, isFeatureEnabled } from './utils/logger';
 import { cleanEnv, str, num, bool } from 'envalid';
 
 // Load and validate environment variables
 cleanEnv(process.env, {
-  MONGO_URI:        str({ desc: 'MongoDB connection URI' }),
-  MONGO_DB:         str({ desc: 'MongoDB database name', default: '' }),
-  MONGO_USER:       str({ desc: 'MongoDB username', default: '' }),
-  MONGO_PASSWORD:   str({ desc: 'MongoDB password', default: '' }),
-  MONGO_AUTH_DB:    str({ desc: 'MongoDB auth DB', default: 'admin' }),
-  MSSQL_HOST:       str({ desc: 'MSSQL host', default: '' }),
-  MSSQL_PORT:       num({ desc: 'MSSQL port', default: 1433 }),
-  MSSQL_USER:       str({ desc: 'MSSQL user', default: '' }),
-  MSSQL_PASSWORD:   str({ desc: 'MSSQL password', default: '' }),
-  MSSQL_DB:         str({ desc: 'MSSQL database', default: '' }),
-  DB_TYPE:          str({ choices: ['mongo', 'mssql'], default: 'mongo' }),
-  PORT:             num({ default: 3000 }),
-  NODE_ENV:         str({ default: 'development' }),
+  MONGO_URI: str({ desc: 'MongoDB connection URI' }),
+  MONGO_DB: str({ desc: 'MongoDB database name', default: '' }),
+  MONGO_USER: str({ desc: 'MongoDB username', default: '' }),
+  MONGO_PASSWORD: str({ desc: 'MongoDB password', default: '' }),
+  MONGO_AUTH_DB: str({ desc: 'MongoDB auth DB', default: 'admin' }),
+  MSSQL_HOST: str({ desc: 'MSSQL host', default: '' }),
+  MSSQL_PORT: num({ desc: 'MSSQL port', default: 1433 }),
+  MSSQL_USER: str({ desc: 'MSSQL user', default: '' }),
+  MSSQL_PASSWORD: str({ desc: 'MSSQL password', default: '' }),
+  MSSQL_DB: str({ desc: 'MSSQL database', default: '' }),
+  DB_TYPE: str({ choices: ['mongo', 'mssql'], default: 'mongo' }),
+  PORT: num({ default: 3000 }),
+  NODE_ENV: str({ default: 'development' }),
   ENABLE_RATE_LIMIT: bool({ default: true }),
-  ENABLE_CACHE:      bool({ default: true }),
-  ENABLE_HELMET:     bool({ default: true }),
-  LOG_LEVEL:         str({ default: 'info' }),
+  ENABLE_CACHE: bool({ default: true }),
+  ENABLE_HELMET: bool({ default: true }),
+  LOG_LEVEL: str({ default: 'info' }),
   // Add more as needed
 });
 
@@ -69,7 +69,7 @@ import { dbManager } from './database/dbManager';
 const app: Application = express();
 
 // Use helmet for security headers if enabled
-if (process.env.ENABLE_HELMET === 'true') {
+if (isFeatureEnabled('ENABLE_HELMET')) {
   app.use(helmet());
   logger.info('Helmet middleware enabled for security headers');
 }
@@ -97,7 +97,7 @@ const apiLimiter = rateLimit({
 });
 
 // Apply rate limiting to API routes if enabled
-if (process.env.ENABLE_RATE_LIMIT === 'true') {
+if (isFeatureEnabled('ENABLE_RATE_LIMIT')) {
   const apiPrefix = process.env.API_PREFIX || '/api';
   app.use(apiPrefix, apiLimiter);
   logger.info(`Rate limiting enabled for ${apiPrefix} routes`);
@@ -180,6 +180,12 @@ app.use(notFoundHandler);
 
 // Global error handler - should be last middleware
 app.use(errorHandler);
+
+// Example: toggle a new feature
+if (isFeatureEnabled('ENABLE_NEW_FEATURE')) {
+  logger.info('New feature is enabled!');
+  // Initialize or mount new feature here
+}
 
 // Starting the server
 const PORT: number = Number(process.env.PORT) || 3000;
