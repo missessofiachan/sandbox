@@ -22,9 +22,29 @@ import {
   notFoundHandler,
 } from './middleware/errorHandlerMiddleware';
 import { logger, requestLogger } from './utils/logger';
+import { cleanEnv, str, num, bool } from 'envalid';
 
-// Load environment variables
-dotenv.config();
+// Load and validate environment variables
+cleanEnv(process.env, {
+  MONGO_URI:        str({ desc: 'MongoDB connection URI' }),
+  MONGO_DB:         str({ desc: 'MongoDB database name', default: '' }),
+  MONGO_USER:       str({ desc: 'MongoDB username', default: '' }),
+  MONGO_PASSWORD:   str({ desc: 'MongoDB password', default: '' }),
+  MONGO_AUTH_DB:    str({ desc: 'MongoDB auth DB', default: 'admin' }),
+  MSSQL_HOST:       str({ desc: 'MSSQL host', default: '' }),
+  MSSQL_PORT:       num({ desc: 'MSSQL port', default: 1433 }),
+  MSSQL_USER:       str({ desc: 'MSSQL user', default: '' }),
+  MSSQL_PASSWORD:   str({ desc: 'MSSQL password', default: '' }),
+  MSSQL_DB:         str({ desc: 'MSSQL database', default: '' }),
+  DB_TYPE:          str({ choices: ['mongo', 'mssql'], default: 'mongo' }),
+  PORT:             num({ default: 3000 }),
+  NODE_ENV:         str({ default: 'development' }),
+  ENABLE_RATE_LIMIT: bool({ default: true }),
+  ENABLE_CACHE:      bool({ default: true }),
+  ENABLE_HELMET:     bool({ default: true }),
+  LOG_LEVEL:         str({ default: 'info' }),
+  // Add more as needed
+});
 
 // Database connection using our dbManager
 import { dbManager } from './database/dbManager';

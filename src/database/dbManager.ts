@@ -47,7 +47,6 @@ class DBManager {
           Number(process.env.MONGO_HEARTBEAT_FREQUENCY_MS) || 10000, // Frequency of heartbeat checks
 
         // Buffer Settings
-        bufferMaxEntries: 0, // Disable mongoose buffering
         bufferCommands: false, // Disable mongoose buffering
 
         // Replica Set Settings (if using replica sets)
