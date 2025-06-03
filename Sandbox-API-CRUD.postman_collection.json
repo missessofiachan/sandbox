@@ -1,0 +1,560 @@
+{
+  "info": {
+    "_postman_id": "b1e1e1e1-1111-2222-3333-444444444444",
+    "name": "Sandbox API CRUD Example",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Postman collection for testing POST, GET, PUT, PATCH, DELETE on /api/users."
+  },
+  "item": [
+    {
+      "name": "Admin Login (POST)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/auth/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "auth", "login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save admin token to collection variable",
+              "if (pm.response.code === 200) {",
+              "  var json = pm.response.json();",
+              "  pm.collectionVariables.set(\"admin_token\", json.token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "description": "ADMIN ONLY: Obtain JWT for admin-protected endpoints. Run this first."
+    },
+    {
+      "name": "Create User (POST)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Jack Black\",\n  \"email\": \"jack@gmail.com\",\n  \"password\": \"TheSkyIsBlack!\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/users",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "users"]
+        }
+      },
+      "description": "USER: Public registration. No authentication required."
+    },
+    {
+      "name": "Get All Users (GET)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-auth-token", "value": "{{admin_token}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/users",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "users"]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Ensure admin_token is set from collection variable",
+              "pm.request.headers.upsert({ key: 'x-auth-token', value: pm.collectionVariables.get('admin_token') });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "description": "ADMIN ONLY: Requires admin JWT."
+    },
+    {
+      "name": "Get User by ID (GET)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-auth-token", "value": "{{admin_token}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/users/{{user_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "users", "{{user_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.request.headers.upsert({ key: 'x-auth-token', value: pm.collectionVariables.get('admin_token') });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "description": "ADMIN ONLY: Requires admin JWT."
+    },
+    {
+      "name": "Update User (PUT)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "x-auth-token", "value": "{{admin_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Jack White\",\n  \"email\": \"jackwhite@gmail.com\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/users/{{user_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "users", "{{user_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.request.headers.upsert({ key: 'x-auth-token', value: pm.collectionVariables.get('admin_token') });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "description": "ADMIN ONLY: Requires admin JWT."
+    },
+    {
+      "name": "Partial Update User (PATCH)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "x-auth-token", "value": "{{admin_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Jack Grey\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/users/{{user_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "users", "{{user_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.request.headers.upsert({ key: 'x-auth-token', value: pm.collectionVariables.get('admin_token') });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "description": "ADMIN ONLY: Requires admin JWT."
+    },
+    {
+      "name": "Delete User (DELETE)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "x-auth-token", "value": "{{admin_token}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/users/{{user_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "users", "{{user_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.request.headers.upsert({ key: 'x-auth-token', value: pm.collectionVariables.get('admin_token') });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "description": "ADMIN ONLY: Requires admin JWT."
+    },
+    {
+      "name": "Create Product (POST)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "x-auth-token", "value": "{{admin_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Wireless Mouse\",\n  \"price\": 29.99,\n  \"description\": \"A comfortable wireless mouse\",\n  \"inStock\": true\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/products",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "products"]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.request.headers.upsert({ key: 'x-auth-token', value: pm.collectionVariables.get('admin_token') });"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save product_id for later requests",
+              "if (pm.response.code === 201) {",
+              "  var json = pm.response.json();",
+              "  pm.collectionVariables.set(\"product_id\", json._id || json.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "description": "ADMIN ONLY: Requires admin JWT."
+    },
+    {
+      "name": "Get All Products (GET)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:3000/api/products",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "products"]
+        }
+      },
+      "description": "USER: Public. No authentication required."
+    },
+    {
+      "name": "Get Product by ID (GET)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:3000/api/products/{{product_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "products", "{{product_id}}"]
+        }
+      },
+      "description": "USER: Public. No authentication required."
+    },
+    {
+      "name": "Update Product (PUT)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "x-auth-token", "value": "{{admin_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Wireless Mouse Updated\",\n  \"price\": 39.99\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/products/{{product_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "products", "{{product_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.request.headers.upsert({ key: 'x-auth-token', value: pm.collectionVariables.get('admin_token') });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "description": "ADMIN ONLY: Requires admin JWT."
+    },
+    {
+      "name": "Partial Update Product (PATCH)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "x-auth-token", "value": "{{admin_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"price\": 49.99\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/products/{{product_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "products", "{{product_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.request.headers.upsert({ key: 'x-auth-token', value: pm.collectionVariables.get('admin_token') });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "description": "ADMIN ONLY: Requires admin JWT."
+    },
+    {
+      "name": "Delete Product (DELETE)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "x-auth-token", "value": "{{admin_token}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/products/{{product_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "products", "{{product_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.request.headers.upsert({ key: 'x-auth-token', value: pm.collectionVariables.get('admin_token') });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "description": "ADMIN ONLY: Requires admin JWT."
+    },
+    {
+      "name": "Create Order (POST)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "x-auth-token", "value": "{{admin_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"products\": [\"{{product_id}}\"],\n  \"total\": 49.99,\n  \"status\": \"pending\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/orders",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "orders"]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.request.headers.upsert({ key: 'x-auth-token', value: pm.collectionVariables.get('admin_token') });"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Save order_id for later requests",
+              "if (pm.response.code === 201) {",
+              "  var json = pm.response.json();",
+              "  pm.collectionVariables.set(\"order_id\", json._id || json.id);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "description": "ADMIN ONLY: Requires admin JWT."
+    },
+    {
+      "name": "Get All Orders (GET)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:3000/api/orders",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "orders"]
+        }
+      },
+      "description": "ADMIN ONLY: Requires admin JWT."
+    },
+    {
+      "name": "Get Order by ID (GET)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:3000/api/orders/{{order_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "orders", "{{order_id}}"]
+        }
+      },
+      "description": "ADMIN ONLY: Requires admin JWT."
+    },
+    {
+      "name": "Update Order (PUT)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "x-auth-token", "value": "{{admin_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"shipped\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/orders/{{order_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "orders", "{{order_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.request.headers.upsert({ key: 'x-auth-token', value: pm.collectionVariables.get('admin_token') });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "description": "ADMIN ONLY: Requires admin JWT."
+    },
+    {
+      "name": "Partial Update Order (PATCH)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "x-auth-token", "value": "{{admin_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"delivered\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/orders/{{order_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "orders", "{{order_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.request.headers.upsert({ key: 'x-auth-token', value: pm.collectionVariables.get('admin_token') });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "description": "ADMIN ONLY: Requires admin JWT."
+    },
+    {
+      "name": "Delete Order (DELETE)",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "x-auth-token", "value": "{{admin_token}}" }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/orders/{{order_id}}",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "orders", "{{order_id}}"]
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "pm.request.headers.upsert({ key: 'x-auth-token', value: pm.collectionVariables.get('admin_token') });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "description": "ADMIN ONLY: Requires admin JWT."
+    }
+  ],
+  "variable": [
+    { "key": "admin_token", "value": "" },
+    { "key": "user_id", "value": "" },
+    { "key": "product_id", "value": "" },
+    { "key": "order_id", "value": "" }
+  ]
+}
