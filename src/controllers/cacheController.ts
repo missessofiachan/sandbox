@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { getCacheStats } from '../middleware/cacheMiddleware';
+import { getCacheStats, clearCache } from '../middleware/cacheMiddleware';
 
 /**
  * Get cache statistics for monitoring and debugging
@@ -31,8 +31,6 @@ export const getCacheStatistics = (req: Request, res: Response): void => {
  * @access Admin only
  */
 export const clearEntireCache = (_req: Request, res: Response): void => {
-  // Import clearCache function
-  const { clearCache } = require('../middleware/cacheMiddleware');
   clearCache();
   res.status(200).json({ message: 'Cache cleared successfully' });
 };

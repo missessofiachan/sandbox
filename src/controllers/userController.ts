@@ -9,7 +9,9 @@ import {
 import IUserRepository from '../repositories/IUserRepository';
 import { UserRepositoryMongo } from '../repositories/UserRepositoryMongo';
 import UserRepositoryMSSQL from '../repositories/UserRepositoryMSSQL';
-import { connectMSSQL } from '../connectMSSQL';
+
+// Add import for process (for ESM/TypeScript global)
+import process from 'process';
 
 // Dynamic repository selection based on DB_TYPE
 import { logger } from '../utils/logger';

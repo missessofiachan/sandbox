@@ -8,7 +8,15 @@ import flatPrettier from 'eslint-config-prettier/flat';
 export default [
   // Ignore patterns
   {
-    ignores: ['node_modules/', 'dist/', 'logs/', '*.log', 'coverage/', '.env'],
+    ignores: [
+      'node_modules/',
+      'dist/',
+      'logs/',
+      '*.log',
+      'coverage/',
+      '.env',
+      '**/*.d.ts',
+    ],
   },
 
   // Base JS rules
@@ -22,6 +30,14 @@ export default [
       parserOptions: {
         project: './tsconfig.json',
         sourceType: 'module',
+      },
+      globals: {
+        process: 'readonly',
+        module: 'readonly',
+        require: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        console: 'readonly',
       },
     },
     plugins: {

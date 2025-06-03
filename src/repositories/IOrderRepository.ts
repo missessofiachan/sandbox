@@ -1,8 +1,13 @@
+import { IOrder } from '../types';
+
 export default interface IOrderRepository {
-  create(data: any): Promise<any>;
-  findById(id: string | number): Promise<any>;
-  findAll(): Promise<any[]>;
-  update(id: string | number, data: any): Promise<any>;
-  partialUpdate(id: string | number, data: any): Promise<any>;
-  delete(id: string | number): Promise<any>;
+  create(data: IOrder): Promise<IOrder>;
+  findById(id: string | number): Promise<IOrder | null>;
+  findAll(): Promise<IOrder[]>;
+  update(id: string | number, data: Partial<IOrder>): Promise<IOrder | null>;
+  partialUpdate(
+    id: string | number,
+    data: Partial<IOrder>
+  ): Promise<IOrder | null>;
+  delete(id: string | number): Promise<IOrder | null>;
 }

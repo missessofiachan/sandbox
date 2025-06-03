@@ -6,13 +6,13 @@ import { logger } from '../utils/logger';
 export class APIError extends Error {
   statusCode: number;
   isOperational: boolean;
-  details?: any;
+  details?: unknown;
 
   constructor(
     message: string,
     statusCode: number,
     isOperational = true,
-    details?: any
+    details?: unknown
   ) {
     super(message);
     this.statusCode = statusCode;
@@ -26,7 +26,7 @@ export class APIError extends Error {
    * @param details Additional error details
    * @returns this error instance for chaining
    */
-  withDetails(details: any): APIError {
+  withDetails(details: unknown): APIError {
     this.details = details;
     return this;
   }
@@ -86,7 +86,8 @@ export const errorHandler = (
   err: Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _next: NextFunction
 ) => {
   // Log error with additional request information for debugging
   logger.error(`Error: ${err.message}`, {
@@ -124,7 +125,11 @@ export const errorHandler = (
   }
 
   // Handle Mongoose/MongoDB duplicate key error
-  else if (err.name === 'MongoServerError' && (err as any).code === 11000) {
+  else if (
+    err.name === 'MongoServerError' &&
+    typeof (err as unknown as { code?: number }).code === 'number' &&
+    (err as unknown as { code: number }).code === 11000
+  ) {
     statusCode = 409;
     message = 'Duplicate key error';
     isOperational = true;
@@ -156,7 +161,12 @@ export const errorHandler = (
   const isDevelopment = process.env.NODE_ENV === 'development';
 
   // Format the response
-  const errorResponse: any = {
+  const errorResponse: {
+    status: string;
+    message: string;
+    details?: unknown;
+    stack?: string;
+  } = {
     status: 'error',
     message,
   };
@@ -177,17 +187,22 @@ export const errorHandler = (
 };
 
 // Handle 404 errors for undefined routes
-export const notFoundHandler = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const notFoundHandler = (req: Request, res: Response) => {
   const error = new NotFoundError(`Not found - ${req.originalUrl}`);
-  next(error);
+  // Use errorHandler directly to avoid unused 'next'
+  errorHandler(error, req, res, (() => {}) as NextFunction);
 };
 
 // Async handler to catch errors in async functions
-export const asyncHandler = (fn: Function) => {
+export const asyncHandler = <
+  T extends (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => Promise<unknown> | unknown,
+>(
+  fn: T
+) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };

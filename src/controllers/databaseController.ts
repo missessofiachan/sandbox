@@ -2,6 +2,7 @@
 import { Request, Response } from 'express';
 import { dbManager } from '../database/dbManager';
 import { asyncHandler } from '../middleware/errorHandlerMiddleware';
+import process from 'process';
 
 /**
  * Get detailed database connection pool statistics
@@ -95,15 +96,32 @@ export const resetConnectionPools = asyncHandler(
   }
 );
 
+// Use unknown for stats to avoid 'any' lint error
+interface DatabaseHealth {
+  mongodb: {
+    connected: boolean;
+    stats: unknown;
+    ping?: string;
+  };
+  mssql: {
+    connected: boolean;
+    stats: unknown;
+    ping?: string;
+  };
+}
+
 /**
  * Generate recommendations based on current pool statistics
  */
-function generatePoolRecommendations(health: any): string[] {
+function generatePoolRecommendations(health: DatabaseHealth): string[] {
   const recommendations: string[] = [];
 
   // MongoDB recommendations
   if (health.mongodb.connected && health.mongodb.stats) {
-    const stats = health.mongodb.stats;
+    const stats = health.mongodb.stats as {
+      readyState?: number;
+      poolConnections?: string;
+    };
 
     if (stats.readyState !== 1) {
       recommendations.push(

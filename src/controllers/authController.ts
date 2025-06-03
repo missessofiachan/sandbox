@@ -1,7 +1,6 @@
 // Controller for authentication logic (login)
 // Validates user credentials and issues JWT on success
 import { Request, Response } from 'express';
-import { userLoginSchema } from '../validation/userValidation';
 import createToken from '../middleware/createTokenMiddleware';
 import IUserRepository from '../repositories/IUserRepository';
 import { UserRepositoryMongo } from '../repositories/UserRepositoryMongo';
@@ -11,9 +10,11 @@ import bcrypt from 'bcrypt';
 import {
   asyncHandler,
   UnauthorizedError,
-  BadRequestError,
   ServiceUnavailableError,
 } from '../middleware/errorHandlerMiddleware';
+
+// Ensure Node.js types are available for process global
+import process from 'node:process';
 
 // Simple in-memory queue for failed login attempts
 const failedLoginQueue: Array<{
@@ -22,15 +23,23 @@ const failedLoginQueue: Array<{
   timestamp: number;
 }> = [];
 
-function isDbError(err: any): boolean {
+function isDbError(err: unknown): boolean {
   // Check for common Mongoose/Mongo network errors
-  return (
+  if (
     err &&
-    (err.name === 'MongoNetworkError' ||
-      err.message?.includes('ECONNREFUSED') ||
-      err.message?.includes('failed to connect') ||
-      err.message?.includes('not connected'))
-  );
+    typeof err === 'object' &&
+    err !== null &&
+    ('name' in err || 'message' in err)
+  ) {
+    const errorObj = err as { name?: string; message?: string };
+    return (
+      errorObj.name === 'MongoNetworkError' ||
+      (errorObj.message?.includes('ECONNREFUSED') ?? false) ||
+      (errorObj.message?.includes('failed to connect') ?? false) ||
+      (errorObj.message?.includes('not connected') ?? false)
+    );
+  }
+  return false;
 }
 
 // Factory to select appropriate user repository for auth

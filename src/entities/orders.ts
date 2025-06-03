@@ -1,4 +1,4 @@
-import e from 'express';
+// This file defines the Order entity for a TypeORM application.
 import {
   Entity,
   PrimaryGeneratedColumn,

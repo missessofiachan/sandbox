@@ -1,8 +1,9 @@
 import Product from '../models/Product';
 import IProductRepository from './IProductRepository';
+import { IProduct } from '../types';
 
 export class ProductRepositoryMongo implements IProductRepository {
-  async create(data: any) {
+  async create(data: IProduct) {
     return Product.create(data);
   }
   async findById(id: string) {
@@ -11,13 +12,13 @@ export class ProductRepositoryMongo implements IProductRepository {
   async findAll() {
     return Product.find();
   }
-  async update(id: string, data: any) {
+  async update(id: string, data: Partial<IProduct>) {
     return Product.findByIdAndUpdate(id, data, {
       new: true,
       runValidators: true,
     });
   }
-  async partialUpdate(id: string, data: any) {
+  async partialUpdate(id: string, data: Partial<IProduct>) {
     return Product.findByIdAndUpdate(
       id,
       { $set: data },

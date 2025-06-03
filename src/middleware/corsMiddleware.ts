@@ -1,5 +1,5 @@
 import cors from 'cors';
-import { RequestHandler, Request, Response, NextFunction } from 'express';
+import { RequestHandler, Request, Response } from 'express';
 
 // Configure and export CORS middleware
 const corsMiddleware = (): RequestHandler => {
@@ -22,15 +22,26 @@ const corsMiddleware = (): RequestHandler => {
   };
 };
 
+// Type guard for error objects
+function isErrorWithStatusAndMessage(
+  err: unknown
+): err is { status?: number; message?: string } {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    ('status' in err || 'message' in err)
+  );
+}
+
 // Global error handler middleware
-export function globalErrorHandler(
-  err: any,
-  _req: Request,
-  res: Response,
-  _next: NextFunction
-) {
-  const status = err.status || 500;
-  res.status(status).json({ error: err.message || 'Internal Server Error' });
+export function globalErrorHandler(err: unknown, _req: Request, res: Response) {
+  let status = 500;
+  let message = 'Internal Server Error';
+  if (isErrorWithStatusAndMessage(err)) {
+    if (typeof err.status === 'number') status = err.status;
+    if (typeof err.message === 'string') message = err.message;
+  }
+  res.status(status).json({ error: message });
 }
 
 export default corsMiddleware;

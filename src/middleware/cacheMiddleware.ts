@@ -3,6 +3,7 @@ import { Request, Response, NextFunction, RequestHandler } from 'express';
 import mcache from 'memory-cache';
 import dotenv from 'dotenv';
 import { logger } from '../utils/logger';
+import { Buffer } from 'buffer';
 
 // Load environment variables
 dotenv.config();
@@ -170,14 +171,16 @@ export const cacheResponse = (
 
     // Override send function to cache the response
     const originalSend = res.send.bind(res);
-    res.send = function (body: any): Response {
+    res.send = function (body: unknown): Response {
       // Only cache successful responses
       if (res.statusCode >= 200 && res.statusCode < 300) {
         // Calculate adjusted TTL based on popularity
         const adjustedDuration = getAdjustedTTL(key, duration);
 
         // Estimate the size of the response for cache size tracking
-        const responseSize = Buffer.from(JSON.stringify(body)).length;
+        const responseSize = Buffer.from(
+          typeof body === 'string' ? body : JSON.stringify(body)
+        ).length;
 
         // Update cache statistics
         incrementEntries(responseSize);

@@ -4,11 +4,9 @@ import jwt from 'jsonwebtoken';
 import { JWTPayload } from '../types';
 
 // Extend Express Request to include user property
-declare global {
-  namespace Express {
-    interface Request {
-      user?: JWTPayload;
-    }
+declare module 'express' {
+  interface Request {
+    user?: JWTPayload;
   }
 }
 
@@ -34,7 +32,7 @@ const authMiddleware = (
     // Attach decoded user info to request
     req.user = decoded;
     next();
-  } catch (err) {
+  } catch {
     // Token invalid or expired
     res.status(401).json({ error: 'Invalid or expired token' });
     return void 0;

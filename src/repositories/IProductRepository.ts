@@ -1,9 +1,18 @@
+import { IProduct } from '../types';
+
 export interface IProductRepository {
-  create(data: any): Promise<any>;
-  findById(id: string | number): Promise<any>;
-  findAll(): Promise<any[]>;
-  update(id: string | number, data: any): Promise<any>;
-  partialUpdate(id: string | number, data: any): Promise<any>;
-  delete(id: string | number): Promise<any>;
+  create(data: IProduct): Promise<IProduct>;
+  findById(id: string | number): Promise<IProduct | null>;
+  findAll(): Promise<IProduct[]>;
+  update(
+    id: string | number,
+    data: Partial<IProduct>
+  ): Promise<IProduct | null>;
+  partialUpdate(
+    id: string | number,
+    data: Partial<IProduct>
+  ): Promise<IProduct | null>;
+  delete(id: string | number): Promise<IProduct | null>;
 }
+
 export default IProductRepository;

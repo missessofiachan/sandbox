@@ -6,7 +6,6 @@ import validateRequest from '../middleware/validationMiddleware';
 import {
   userRegistrationSchema,
   userUpdateSchema,
-  userLoginSchema,
 } from '../validation/userValidation';
 
 const router = express.Router();

@@ -1,20 +1,15 @@
 // Controller for Product resource
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import IProductRepository from '../repositories/IProductRepository';
 import { ProductRepositoryMongo } from '../repositories/ProductRepositoryMongo';
 import { ProductRepositoryMSSQL } from '../repositories/ProductRepositoryMSSQL';
-import { connectMSSQL } from '../connectMSSQL';
-import {
-  productSchema,
-  productUpdateSchema,
-} from '../validation/productValidation';
+import { invalidateCache } from '../middleware/cacheMiddleware';
 import {
   asyncHandler,
   NotFoundError,
-  BadRequestError,
 } from '../middleware/errorHandlerMiddleware';
-import { clearCache, invalidateCache } from '../middleware/cacheMiddleware';
 import { logger } from '../utils/logger';
+import process from 'process'; // Import for ESM/TypeScript global
 
 // Dynamic repository selection based on DB_TYPE
 function getProductRepo(): IProductRepository {

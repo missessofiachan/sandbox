@@ -1,8 +1,9 @@
 import Order from '../models/Order';
 import IOrderRepository from './IOrderRepository';
+import { IOrder } from '../types';
 
 export class OrderRepositoryMongo implements IOrderRepository {
-  async create(data: any) {
+  async create(data: IOrder) {
     return Order.create(data);
   }
   async findById(id: string) {
@@ -11,13 +12,13 @@ export class OrderRepositoryMongo implements IOrderRepository {
   async findAll() {
     return Order.find();
   }
-  async update(id: string, data: any) {
+  async update(id: string, data: Partial<IOrder>) {
     return Order.findByIdAndUpdate(id, data, {
       new: true,
       runValidators: true,
     });
   }
-  async partialUpdate(id: string, data: any) {
+  async partialUpdate(id: string, data: Partial<IOrder>) {
     return Order.findByIdAndUpdate(
       id,
       { $set: data },

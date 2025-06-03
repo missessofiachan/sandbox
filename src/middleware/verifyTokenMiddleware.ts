@@ -26,7 +26,7 @@ const verifyToken = (
     // Attach decoded user info to request
     req.user = decoded;
     next();
-  } catch (err) {
+  } catch {
     // Token invalid or expired
     return res.status(401).json({ error: 'Invalid or expired token' });
   }

@@ -1,8 +1,9 @@
 import User from '../models/User';
 import IUserRepository from './IUserRepository';
+import { IUser } from '../types';
 
 export class UserRepositoryMongo implements IUserRepository {
-  async create(data: any) {
+  async create(data: IUser) {
     return User.create(data);
   }
   async findById(id: string) {
@@ -11,10 +12,10 @@ export class UserRepositoryMongo implements IUserRepository {
   async findAll() {
     return User.find();
   }
-  async update(id: string, data: any) {
+  async update(id: string, data: Partial<IUser>) {
     return User.findByIdAndUpdate(id, data, { new: true, runValidators: true });
   }
-  async partialUpdate(id: string, data: any) {
+  async partialUpdate(id: string, data: Partial<IUser>) {
     return User.findByIdAndUpdate(
       id,
       { $set: data },

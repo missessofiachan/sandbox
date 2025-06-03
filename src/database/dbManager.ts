@@ -5,6 +5,7 @@ import { logger } from '../utils/logger';
 import Product from '../entities/Product';
 import User from '../entities/user';
 import Order from '../entities/orders';
+import process from 'process';
 
 // Class to manage database connections
 class DBManager {
@@ -50,7 +51,10 @@ class DBManager {
         bufferCommands: false, // Disable mongoose buffering
 
         // Replica Set Settings (if using replica sets)
-        readPreference: (process.env.MONGO_READ_PREFERENCE as any) || 'primary',
+        readPreference:
+          (process.env
+            .MONGO_READ_PREFERENCE as mongoose.mongo.ReadPreferenceMode) ||
+          'primary',
 
         // Retry Settings
         retryWrites: process.env.MONGO_RETRY_WRITES !== 'false',
@@ -233,7 +237,7 @@ class DBManager {
     }
   }
   // Get MongoDB connection pool statistics
-  public getMongoPoolStats(): any {
+  public getMongoPoolStats(): unknown {
     if (!this.mongoConnected || !mongoose.connection.db) {
       return null;
     }
@@ -256,12 +260,19 @@ class DBManager {
     };
   }
   // Get MSSQL connection pool statistics
-  public getMSSQLPoolStats(): any {
+  public getMSSQLPoolStats(): unknown {
     if (!this.mssqlConnected || !this.mssqlDataSource) {
       return null;
     }
 
-    const options = this.mssqlDataSource.options as any;
+    // Use a more specific type for options
+    const options = this.mssqlDataSource.options as {
+      host?: string;
+      port?: number;
+      database?: string;
+      poolSize?: number;
+      extra?: { pool?: unknown };
+    };
     return {
       isInitialized: this.mssqlDataSource.isInitialized,
       options: {
@@ -275,8 +286,19 @@ class DBManager {
     };
   }
   // Get comprehensive database health information
-  public async getDatabaseHealth(): Promise<any> {
-    const health: any = {
+  public async getDatabaseHealth(): Promise<unknown> {
+    // Use a specific type for health
+    interface HealthDbStats {
+      connected: boolean;
+      stats: unknown;
+      ping?: string;
+      pingError?: string;
+    }
+    const health: {
+      timestamp: string;
+      mongodb: HealthDbStats;
+      mssql: HealthDbStats;
+    } = {
       timestamp: new Date().toISOString(),
       mongodb: {
         connected: this.isMongoConnected(),

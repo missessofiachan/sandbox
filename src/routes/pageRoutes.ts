@@ -1,6 +1,6 @@
 // Express route definitions for serving static pages and handling 404s
 // Handles routes for home, about, students, login, and 404
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import path from 'path';
 
 const router = express.Router();
@@ -52,7 +52,7 @@ router.get('/api', (_req: Request, res: Response) => {
 });
 
 // 404 handler
-router.use((_req: Request, res: Response, _next: NextFunction) => {
+router.use((_req: Request, res: Response) => {
   res.status(404).send('Page not found'); // Handle undefined routes with a 404 message
 });
 

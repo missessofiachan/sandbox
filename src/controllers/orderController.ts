@@ -3,19 +3,15 @@ import { Request, Response } from 'express';
 import IOrderRepository from '../repositories/IOrderRepository';
 import { OrderRepositoryMongo } from '../repositories/OrderRepositoryMongo';
 import OrderRepositoryMSSQL from '../repositories/OrderRepositoryMSSQL';
-import { connectMSSQL } from '../connectMSSQL';
-import { IOrder } from '../types';
-import { orderSchema, orderUpdateSchema } from '../validation/orderValidation';
+import { logger } from '../utils/logger';
 import {
   asyncHandler,
   NotFoundError,
-  BadRequestError,
 } from '../middleware/errorHandlerMiddleware';
-import { clearCache, invalidateCache } from '../middleware/cacheMiddleware';
+import { invalidateCache } from '../middleware/cacheMiddleware';
+import process from 'process';
 
 // Dynamic repository selection based on DB_TYPE
-import { logger } from '../utils/logger';
-
 function getOrderRepo(): IOrderRepository {
   if (process.env.DB_TYPE === 'mssql') {
     try {

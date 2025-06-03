@@ -4,8 +4,7 @@
 
 // Importing required modules
 import express, { Application } from 'express';
-import dotenv from 'dotenv';
-import mongoose from 'mongoose';
+
 import path from 'path';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
