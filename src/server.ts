@@ -4,7 +4,6 @@
 
 // Importing required modules
 import express, { Application } from 'express';
-
 import path from 'path';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
@@ -105,12 +104,25 @@ if (isFeatureEnabled('ENABLE_RATE_LIMIT')) {
 }
 
 // Enhanced health check endpoint with connection pool statistics
+// Define the expected type for databaseHealth
+interface DatabaseHealth {
+  mongodb: {
+    connected: boolean;
+    stats: unknown;
+  };
+  mssql: {
+    connected: boolean;
+    stats: unknown;
+  };
+}
+
 app.get('/health', async (req, res) => {
   try {
     const dbType = process.env.DB_TYPE || 'mongo';
 
     // Get comprehensive database health information
-    const databaseHealth = await dbManager.getDatabaseHealth();
+    const databaseHealth =
+      (await dbManager.getDatabaseHealth()) as DatabaseHealth;
 
     // Determine overall status
     let dbStatus = 'unknown';

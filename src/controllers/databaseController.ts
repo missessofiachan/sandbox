@@ -11,7 +11,8 @@ import process from 'process';
  */
 export const getPoolStatistics = asyncHandler(
   async (req: Request, res: Response) => {
-    const databaseHealth = await dbManager.getDatabaseHealth();
+    const databaseHealth =
+      (await dbManager.getDatabaseHealth()) as DatabaseHealth;
 
     const poolStats = {
       timestamp: new Date().toISOString(),

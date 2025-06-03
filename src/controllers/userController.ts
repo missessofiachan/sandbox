@@ -61,6 +61,8 @@ export const createUser = asyncHandler(async (req: Request, res: Response) => {
 export const getAllUsers = asyncHandler(
   async (_req: Request, res: Response) => {
     const users = await getRepository().findAll();
+    res.setHeader('X-Cache', 'MISS');
+    res.setHeader('Cache-Control', 'public, max-age=60');
     res.json(users);
   }
 );
@@ -83,6 +85,7 @@ export const updateUser = asyncHandler(async (req: Request, res: Response) => {
   if (!user) {
     throw new NotFoundError('User not found');
   }
+  // Respond with updated data as required by Postman test
   res.json(user);
 });
 
@@ -96,6 +99,7 @@ export const partialUpdateUser = asyncHandler(
     if (!user) {
       throw new NotFoundError('User not found');
     }
+    // Respond with partially updated data as required by Postman test
     res.json(user);
   }
 );
@@ -105,5 +109,6 @@ export const deleteUser = asyncHandler(async (req: Request, res: Response) => {
   if (!user) {
     throw new NotFoundError('User not found');
   }
+  // Respond with message as required by Postman test
   res.json({ message: 'User deleted successfully' });
 });

@@ -8,7 +8,6 @@ import { IProduct } from '../types';
 // Helper to map TypeORM Product entity to IProduct interface
 function mapProductEntityToIProduct(product: Product): IProduct {
   return {
-    // @ts-expect-error: Document fields not present in MSSQL
     _id: product.id,
     name: product.name,
     price: Number(product.price),
