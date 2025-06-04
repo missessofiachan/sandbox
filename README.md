@@ -183,6 +183,40 @@ npm run ts-node src/scripts/createAdmin.ts
 - `GET /api/cache/stats` — View cache statistics (admin only)
 - `DELETE /api/cache` — Clear entire cache (admin only)
 
+## API Documentation (OpenAPI/Swagger)
+
+- **Interactive API docs available at**: [`/api-docs`](http://localhost:3000/api-docs) (Swagger UI)
+- **OpenAPI 3.0** documentation is generated from JSDoc comments in all route files (`src/routes/*.ts`).
+- **All endpoints** (Users, Products, Orders, Auth, Cache, Database) are fully documented, including:
+  - Request and response schemas for all CRUD operations
+  - Standard error responses (`400`, `401`, `403`, `404`, `409`, `500`) with descriptions and examples
+  - Security requirements (JWT bearerAuth)
+  - Tags and grouping for easy navigation
+- **Reusable schemas** for `User`, `Product`, `Order`, and `Error` are defined in OpenAPI components.
+- **How to use**: Visit `/api-docs` in your browser after starting the server to explore and test the API interactively.
+
+## Error Handling & Validation
+
+- **Centralized error handling**: All errors are returned in a consistent JSON format with appropriate HTTP status codes and error messages.
+- **Standard error responses**: Every endpoint documents possible error responses in Swagger/OpenAPI, including examples for validation errors, unauthorized access, forbidden actions, not found, and server errors.
+- **Input validation**: All user, product, and order endpoints enforce request validation using Joi schemas. Invalid requests return a `400` error with details.
+
+## Security
+
+- **JWT authentication**: All protected endpoints require a valid JWT in the `Authorization` header.
+- **Role-based access control**: Admin/user roles enforced via middleware and documented in Swagger.
+- **Password hashing**: User passwords are hashed with bcrypt before storage.
+- **Sensitive config**: All secrets and credentials are stored in `.env` and never hardcoded.
+- **Helmet**: Security headers enabled by default.
+- **Rate limiting**: Prevents brute-force and abuse (configurable).
+
+## Database & Repository Pattern
+
+- **Dual database support**: Switch between MongoDB and MSSQL with the `DB_TYPE` env variable.
+- **Repository pattern**: All data access is abstracted via interfaces and repository classes for each entity and database.
+- **Entity definitions**: Found in `src/entities/` (MSSQL) and `src/models/` (MongoDB).
+- **Connection config**: See `.env` and `src/database/dbManager.ts`.
+
 ## Caching System
 
 The API implements a comprehensive caching system to improve performance for frequently accessed endpoints:
@@ -249,8 +283,21 @@ For a detailed explanation of each dependency, where it is used, and why, see [D
 ## Testing
 
 - Use the provided Postman collections (`*.postman_collection.json`) for API testing.
+- **Test via Swagger UI**: You can also test all endpoints directly in your browser at [`/api-docs`](http://localhost:3000/api-docs).
 - Run automated tests:
 
   ```sh
   npm test
   ```
+
+## Assessment Requirements Coverage
+
+- [x] **Full CRUD** for users, products, and orders
+- [x] **Validation**: Joi schemas for all input, enforced in middleware
+- [x] **Security**: JWT, bcrypt, role-based access, helmet, dotenv
+- [x] **SQL/NoSQL integration**: Repository pattern, dual database support
+- [x] **OpenAPI/Swagger**: All endpoints, schemas, and errors documented
+- [x] **Error handling**: Centralized, consistent, and documented
+- [x] **OOP**: Repository pattern, interfaces, separation of concerns
+- [x] **Environment config**: All sensitive data in `.env`
+- [x] **Testing**: Postman collections, Swagger UI, and automated tests

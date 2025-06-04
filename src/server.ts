@@ -21,6 +21,8 @@ import {
 } from './middleware/errorHandlerMiddleware';
 import { logger, requestLogger, isFeatureEnabled } from './utils/logger';
 import { cleanEnv, str, num, bool } from 'envalid';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 
 // Load and validate environment variables
 cleanEnv(process.env, {
@@ -43,6 +45,28 @@ cleanEnv(process.env, {
   LOG_LEVEL: str({ default: 'info' }),
   // Add more as needed
 });
+
+// Swagger/OpenAPI setup
+const swaggerDefinition = {
+  openapi: '3.0.0',
+  info: {
+    title: 'Sandbox API',
+    version: '1.0.0',
+    description: 'API documentation for the Sandbox project',
+  },
+  servers: [
+    {
+      url: 'http://localhost:3000',
+    },
+  ],
+};
+
+const swaggerOptions = {
+  swaggerDefinition,
+  apis: ['./src/routes/*.ts'], // Path to your route files for JSDoc comments
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 // Database connection using our dbManager
 import { dbManager } from './database/dbManager';
@@ -183,6 +207,10 @@ app.use('/api/users', userRoutes);
 app.use('/api/cache', cacheRoutes);
 // Setting up routes for database monitoring
 app.use('/api/database', databaseRoutes);
+
+// Serve Swagger/OpenAPI documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 // Setting up routes for serving pages (should be last)
 app.use('/', pageRoutes);
 

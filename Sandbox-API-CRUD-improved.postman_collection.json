@@ -23,15 +23,9 @@
         "url": {
           "raw": "{{base_url}}/api/auth/login",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "auth",
-            "login"
-          ]
+          "path": ["api", "auth", "login"]
         }
       },
       "event": [
@@ -82,14 +76,9 @@
         "url": {
           "raw": "{{base_url}}/api/users",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "users"
-          ]
+          "path": ["api", "users"]
         }
       },
       "description": "USER: Public registration. No authentication required.",
@@ -129,14 +118,9 @@
         "url": {
           "raw": "{{base_url}}/api/users",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "users"
-          ]
+          "path": ["api", "users"]
         }
       },
       "event": [
@@ -179,15 +163,9 @@
         "url": {
           "raw": "{{base_url}}/api/users/{{user_id}}",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "users",
-            "{{user_id}}"
-          ]
+          "path": ["api", "users", "{{user_id}}"]
         }
       },
       "event": [
@@ -236,15 +214,9 @@
         "url": {
           "raw": "{{base_url}}/api/users/{{user_id}}",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "users",
-            "{{user_id}}"
-          ]
+          "path": ["api", "users", "{{user_id}}"]
         }
       },
       "event": [
@@ -293,15 +265,9 @@
         "url": {
           "raw": "{{base_url}}/api/users/{{user_id}}",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "users",
-            "{{user_id}}"
-          ]
+          "path": ["api", "users", "{{user_id}}"]
         }
       },
       "event": [
@@ -342,15 +308,9 @@
         "url": {
           "raw": "{{base_url}}/api/users/{{user_id}}",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "users",
-            "{{user_id}}"
-          ]
+          "path": ["api", "users", "{{user_id}}"]
         }
       },
       "event": [
@@ -399,14 +359,9 @@
         "url": {
           "raw": "{{base_url}}/api/products",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "products"
-          ]
+          "path": ["api", "products"]
         }
       },
       "event": [
@@ -442,14 +397,9 @@
         "url": {
           "raw": "{{base_url}}/api/products",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "products"
-          ]
+          "path": ["api", "products"]
         }
       },
       "description": "USER: Public. No authentication required.",
@@ -475,15 +425,9 @@
         "url": {
           "raw": "{{base_url}}/api/products/{{product_id}}",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "products",
-            "{{product_id}}"
-          ]
+          "path": ["api", "products", "{{product_id}}"]
         }
       },
       "description": "USER: Public. No authentication required.",
@@ -523,15 +467,9 @@
         "url": {
           "raw": "{{base_url}}/api/products/{{product_id}}",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "products",
-            "{{product_id}}"
-          ]
+          "path": ["api", "products", "{{product_id}}"]
         }
       },
       "event": [
@@ -580,15 +518,9 @@
         "url": {
           "raw": "{{base_url}}/api/products/{{product_id}}",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "products",
-            "{{product_id}}"
-          ]
+          "path": ["api", "products", "{{product_id}}"]
         }
       },
       "event": [
@@ -629,15 +561,9 @@
         "url": {
           "raw": "{{base_url}}/api/products/{{product_id}}",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "products",
-            "{{product_id}}"
-          ]
+          "path": ["api", "products", "{{product_id}}"]
         }
       },
       "event": [
@@ -686,14 +612,9 @@
         "url": {
           "raw": "{{base_url}}/api/orders",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "orders"
-          ]
+          "path": ["api", "orders"]
         }
       },
       "event": [
@@ -729,14 +650,9 @@
         "url": {
           "raw": "{{base_url}}/api/orders",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "orders"
-          ]
+          "path": ["api", "orders"]
         }
       },
       "description": "ADMIN ONLY: Requires admin JWT.",
@@ -762,15 +678,9 @@
         "url": {
           "raw": "{{base_url}}/api/orders/{{order_id}}",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "orders",
-            "{{order_id}}"
-          ]
+          "path": ["api", "orders", "{{order_id}}"]
         }
       },
       "description": "ADMIN ONLY: Requires admin JWT.",
@@ -810,15 +720,9 @@
         "url": {
           "raw": "{{base_url}}/api/orders/{{order_id}}",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "orders",
-            "{{order_id}}"
-          ]
+          "path": ["api", "orders", "{{order_id}}"]
         }
       },
       "event": [
@@ -867,15 +771,9 @@
         "url": {
           "raw": "{{base_url}}/api/orders/{{order_id}}",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "orders",
-            "{{order_id}}"
-          ]
+          "path": ["api", "orders", "{{order_id}}"]
         }
       },
       "event": [
@@ -916,15 +814,9 @@
         "url": {
           "raw": "{{base_url}}/api/orders/{{order_id}}",
           "protocol": "http",
-          "host": [
-            "localhost"
-          ],
+          "host": ["localhost"],
           "port": "3000",
-          "path": [
-            "api",
-            "orders",
-            "{{order_id}}"
-          ]
+          "path": ["api", "orders", "{{order_id}}"]
         }
       },
       "event": [
