@@ -15,15 +15,25 @@ const authMiddleware = (
   res: Response,
   next: NextFunction
 ): void => {
-  // Get the Authorization header
-  const authHeader = req.headers['authorization'];
-  // Check if header exists and starts with 'Bearer '
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  let token: string | undefined;
+
+  // Check for x-auth-token header first (Postman collection format)
+  const xAuthToken = req.headers['x-auth-token'] as string;
+  if (xAuthToken) {
+    token = xAuthToken;
+  } else {
+    // Fall back to Authorization header with Bearer format
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+  }
+
+  if (!token) {
     res.status(401).json({ error: 'No token provided' });
     return void 0;
   }
-  // Extract token from header
-  const token = authHeader.split(' ')[1];
+
   try {
     // Use secret from env or fallback
     const secret = process.env.SECRET_KEY || 'defaultsecret';

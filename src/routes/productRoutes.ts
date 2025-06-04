@@ -1,7 +1,7 @@
 // Express route definitions for product CRUD operations
 import express from 'express';
 import * as productController from '../controllers/productController';
-import authMiddleware from '../middleware/authMiddleware';
+import authMiddleware, { requireAdmin } from '../middleware/authMiddleware';
 import validateRequest from '../middleware/validationMiddleware';
 import {
   productSchema,
@@ -20,6 +20,7 @@ const router = express.Router();
 router.post(
   '/',
   authMiddleware,
+  requireAdmin,
   validateRequest(productSchema),
   productController.createProduct
 );
@@ -39,6 +40,7 @@ router.get(
 router.put(
   '/:id',
   authMiddleware,
+  requireAdmin,
   validateRequest(productSchema),
   productController.updateProduct
 );
@@ -46,10 +48,11 @@ router.put(
 router.patch(
   '/:id',
   authMiddleware,
+  requireAdmin,
   validateRequest(productUpdateSchema),
   productController.partialUpdateProduct
 );
 // Delete a product by ID (admin only)
-router.delete('/:id', authMiddleware, productController.deleteProduct);
+router.delete('/:id', authMiddleware, requireAdmin, productController.deleteProduct);
 
 export default router;

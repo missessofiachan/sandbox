@@ -1,7 +1,7 @@
 // Express route definitions for order CRUD operations
 import express from 'express';
 import * as orderController from '../controllers/orderController';
-import authMiddleware from '../middleware/authMiddleware';
+import authMiddleware, { requireAdmin } from '../middleware/authMiddleware';
 import validateRequest from '../middleware/validationMiddleware';
 import { orderSchema, orderUpdateSchema } from '../validation/orderValidation';
 import cacheResponse from '../middleware/cacheMiddleware';
@@ -16,6 +16,7 @@ const router = express.Router();
 router.post(
   '/',
   authMiddleware,
+  requireAdmin,
   validateRequest(orderSchema),
   orderController.createOrder
 );
@@ -24,6 +25,7 @@ router.post(
 router.get(
   '/',
   authMiddleware,
+  requireAdmin,
   cacheResponse(ORDERS_CACHE_DURATION),
   orderController.getAllOrders
 );
@@ -32,6 +34,7 @@ router.get(
 router.get(
   '/:id',
   authMiddleware,
+  requireAdmin,
   cacheResponse(ORDER_CACHE_DURATION),
   orderController.getOrderById
 );
@@ -40,7 +43,8 @@ router.get(
 router.put(
   '/:id',
   authMiddleware,
-  validateRequest(orderSchema),
+  requireAdmin,
+  validateRequest(orderUpdateSchema),
   orderController.updateOrder
 );
 
@@ -48,11 +52,12 @@ router.put(
 router.patch(
   '/:id',
   authMiddleware,
+  requireAdmin,
   validateRequest(orderUpdateSchema),
   orderController.partialUpdateOrder
 );
 
 // Delete an order by ID (admin only)
-router.delete('/:id', authMiddleware, orderController.deleteOrder);
+router.delete('/:id', authMiddleware, requireAdmin, orderController.deleteOrder);
 
 export default router;

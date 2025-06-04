@@ -24,6 +24,6 @@ export interface IProduct extends Document {
 export interface IOrder extends Document {
   products: string[]; // Array of Product IDs
   total: number;
-  status: 'pending' | 'completed' | 'cancelled';
+  status: 'pending' | 'completed' | 'cancelled' | 'shipped' | 'delivered';
   createdAt: Date;
 }
