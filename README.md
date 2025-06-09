@@ -145,6 +145,7 @@ The API provides a health check endpoint at `/health` that returns:
 - Current timestamp
 
 Example response:
+
 ```json
 {
   "status": "healthy",
@@ -194,8 +195,9 @@ npm run pm2:logs
 ```
 
 PM2 provides:
+
 - **Process monitoring** and automatic restarts
-- **Load balancing** across CPU cores  
+- **Load balancing** across CPU cores
 - **Zero-downtime deployments**
 - **Memory monitoring** with restart on leaks
 - **Health checks** every 30 seconds
@@ -211,7 +213,7 @@ Create admin users for different databases:
 # For MongoDB
 npm run ts-node src/scripts/createMongoAdmin.ts
 
-# For MSSQL  
+# For MSSQL
 npm run ts-node src/scripts/createMSSQLAdmin.ts
 
 # For SQLite
@@ -228,6 +230,7 @@ SQLite requires minimal setup since the database file is created automatically:
 4. Create an admin user with `npm run admin:sqlite`
 
 **SQLite Benefits:**
+
 - **Zero-config**: No separate database server installation required
 - **Self-contained**: Single file database, perfect for development and testing
 - **Performance**: Fast for read-heavy workloads
@@ -235,17 +238,17 @@ SQLite requires minimal setup since the database file is created automatically:
 
 ## Database Support Status
 
-| Feature | MongoDB | MSSQL | SQLite | Status |
-|---------|---------|--------|--------|---------|
-| Connection | ✅ | ✅ | ✅ | Complete |
-| User CRUD | ✅ | ✅ | ✅ | Complete |
-| Product CRUD | ✅ | ✅ | ✅ | Complete |
-| Order CRUD | ✅ | ✅ | ⚠️ | Validation Issue* |
-| Authentication | ✅ | ✅ | ✅ | Complete |
-| Health Monitoring | ✅ | ✅ | ✅ | Complete |
-| PM2 Support | ✅ | ✅ | ✅ | Complete |
+| Feature           | MongoDB | MSSQL | SQLite | Status             |
+| ----------------- | ------- | ----- | ------ | ------------------ |
+| Connection        | ✅      | ✅    | ✅     | Complete           |
+| User CRUD         | ✅      | ✅    | ✅     | Complete           |
+| Product CRUD      | ✅      | ✅    | ✅     | Complete           |
+| Order CRUD        | ✅      | ✅    | ⚠️     | Validation Issue\* |
+| Authentication    | ✅      | ✅    | ✅     | Complete           |
+| Health Monitoring | ✅      | ✅    | ✅     | Complete           |
+| PM2 Support       | ✅      | ✅    | ✅     | Complete           |
 
-*Note: Order creation with SQLite may fail due to validation expecting MongoDB ObjectId format. This is a known issue that will be addressed in a future update.
+\*Note: Order creation with SQLite may fail due to validation expecting MongoDB ObjectId format. This is a known issue that will be addressed in a future update.
 
 ## API Overview
 
@@ -411,7 +414,7 @@ For a detailed explanation of each dependency, where it is used, and why, see [D
 
 The Sandbox Node.js CRUD API now provides **complete triple-database support** for MongoDB, MSSQL, and SQLite with:
 
-- ✅ **Zero-config SQLite setup** 
+- ✅ **Zero-config SQLite setup**
 - ✅ **Unified repository pattern** across all databases
 - ✅ **Production-ready PM2 configuration**
 - ✅ **Comprehensive health monitoring**

@@ -13,12 +13,12 @@ module.exports = {
         ENABLE_RATE_LIMIT: 'true',
         ENABLE_CACHE: 'true',
         ENABLE_HELMET: 'true',
-        LOG_LEVEL: 'info'
+        LOG_LEVEL: 'info',
       },
       env_production: {
         NODE_ENV: 'production',
         PORT: 3000,
-        DB_TYPE: 'mongo'
+        DB_TYPE: 'mongo',
       },
       // Process management
       autorestart: true,
@@ -27,7 +27,7 @@ module.exports = {
       restart_delay: 4000,
       max_restarts: 10,
       min_uptime: '10s',
-      
+
       // Logging - Let Winston handle most application logging
       log_file: './logs/pm2-combined.log',
       out_file: './logs/pm2-out.log',
@@ -37,24 +37,24 @@ module.exports = {
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       // Disable PM2 logs for console.log (Winston handles this)
       disable_logs: false,
-      
+
       // Health monitoring
       health_check_http: {
         url: 'http://localhost:3000/health',
         method: 'GET',
         timeout: 5000,
-        interval: 30000
+        interval: 30000,
       },
-      
+
       // Advanced options
       kill_timeout: 5000,
       listen_timeout: 3000,
       shutdown_with_message: true,
-      
+
       // Environment-specific overrides
-      increment_var: 'PORT'
+      increment_var: 'PORT',
     },
-    
+
     // Development configuration - uses built JavaScript for stability
     {
       name: 'sandbox-api-dev',
@@ -68,9 +68,9 @@ module.exports = {
         ENABLE_RATE_LIMIT: 'false',
         ENABLE_CACHE: 'true',
         ENABLE_HELMET: 'false',
-        LOG_LEVEL: 'debug'
+        LOG_LEVEL: 'debug',
       },
-      
+
       // Development-specific settings
       autorestart: true,
       watch: ['./src'],
@@ -82,24 +82,24 @@ module.exports = {
         'tests',
         '*.log',
         '.git',
-        '*.md'
+        '*.md',
       ],
       watch_options: {
-        followSymlinks: false
+        followSymlinks: false,
       },
-      
+
       // Faster restarts for development
       restart_delay: 1000,
       max_restarts: 50,
       min_uptime: '2s',
-      
+
       // Development logging
       log_file: './logs/pm2-dev-combined.log',
       out_file: './logs/pm2-dev-out.log',
       error_file: './logs/pm2-dev-error.log',
-      log_date_format: 'YYYY-MM-DD HH:mm:ss Z'
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
     },
-    
+
     // Alternative TypeScript development configuration (more stable)
     {
       name: 'sandbox-api-dev-ts',
@@ -113,33 +113,26 @@ module.exports = {
         ENABLE_RATE_LIMIT: 'false',
         ENABLE_CACHE: 'true',
         ENABLE_HELMET: 'false',
-        LOG_LEVEL: 'debug'
+        LOG_LEVEL: 'debug',
       },
-      
+
       // Development-specific settings
       autorestart: true,
       watch: ['./dist'],
       watch_delay: 1000,
-      ignore_watch: [
-        'node_modules',
-        'logs',
-        'src',
-        'tests',
-        '*.log',
-        '.git'
-      ],
-      
+      ignore_watch: ['node_modules', 'logs', 'src', 'tests', '*.log', '.git'],
+
       // Faster restarts for development
       restart_delay: 1000,
       max_restarts: 15,
       min_uptime: '3s',
-      
+
       // Development logging
       log_file: './logs/pm2-dev-ts-combined.log',
       out_file: './logs/pm2-dev-ts-out.log',
-      error_file: './logs/pm2-dev-ts-error.log'
+      error_file: './logs/pm2-dev-ts-error.log',
     },
-    
+
     // MongoDB-specific production app
     {
       name: 'sandbox-api-mongo',
@@ -152,20 +145,20 @@ module.exports = {
         DB_TYPE: 'mongo',
         ENABLE_RATE_LIMIT: 'true',
         ENABLE_CACHE: 'true',
-        ENABLE_HELMET: 'true'
+        ENABLE_HELMET: 'true',
       },
       autorestart: true,
       max_memory_restart: '400M',
-      
+
       // Health check specific to MongoDB
       health_check_http: {
         url: 'http://localhost:3001/health',
         method: 'GET',
         timeout: 5000,
-        interval: 30000
-      }
+        interval: 30000,
+      },
     },
-    
+
     // MSSQL-specific production app
     {
       name: 'sandbox-api-mssql',
@@ -178,20 +171,20 @@ module.exports = {
         DB_TYPE: 'mssql',
         ENABLE_RATE_LIMIT: 'true',
         ENABLE_CACHE: 'true',
-        ENABLE_HELMET: 'true'
+        ENABLE_HELMET: 'true',
       },
       autorestart: true,
       max_memory_restart: '400M',
-      
+
       // Health check specific to MSSQL
       health_check_http: {
         url: 'http://localhost:3002/health',
         method: 'GET',
         timeout: 5000,
-        interval: 30000
-      }
+        interval: 30000,
+      },
     },
-    
+
     // SQLite-specific production app
     {
       name: 'sandbox-api-sqlite',
@@ -205,25 +198,25 @@ module.exports = {
         SQLITE_DB_PATH: './data/sandbox.db',
         ENABLE_RATE_LIMIT: 'true',
         ENABLE_CACHE: 'true',
-        ENABLE_HELMET: 'true'
+        ENABLE_HELMET: 'true',
       },
       autorestart: true,
       max_memory_restart: '300M',
-      
+
       // Health check specific to SQLite
       health_check_http: {
         url: 'http://localhost:3003/health',
         method: 'GET',
         timeout: 5000,
-        interval: 30000
+        interval: 30000,
       },
-      
+
       // SQLite-specific logging
       log_file: './logs/pm2-sqlite-combined.log',
       out_file: './logs/pm2-sqlite-out.log',
-      error_file: './logs/pm2-sqlite-error.log'
+      error_file: './logs/pm2-sqlite-error.log',
     },
-    
+
     // SQLite development app
     {
       name: 'sandbox-api-sqlite-dev',
@@ -238,9 +231,9 @@ module.exports = {
         ENABLE_RATE_LIMIT: 'false',
         ENABLE_CACHE: 'true',
         ENABLE_HELMET: 'false',
-        LOG_LEVEL: 'debug'
+        LOG_LEVEL: 'debug',
       },
-      
+
       // Development-specific settings
       autorestart: true,
       watch: ['./dist'],
@@ -252,21 +245,21 @@ module.exports = {
         'tests',
         '*.log',
         '.git',
-        'data/*.db'
+        'data/*.db',
       ],
-      
+
       // Faster restarts for development
       restart_delay: 1000,
       max_restarts: 15,
       min_uptime: '3s',
-      
+
       // Development logging
       log_file: './logs/pm2-sqlite-dev-combined.log',
       out_file: './logs/pm2-sqlite-dev-out.log',
-      error_file: './logs/pm2-sqlite-dev-error.log'
-    }
+      error_file: './logs/pm2-sqlite-dev-error.log',
+    },
   ],
-  
+
   // Deployment configuration
   deploy: {
     production: {
@@ -276,8 +269,9 @@ module.exports = {
       repo: 'git@github.com:your-username/sandbox.git',
       path: '/var/www/sandbox',
       'pre-deploy-local': '',
-      'post-deploy': 'npm install && npm run build && pm2 reload ecosystem.config.js --env production',
-      'pre-setup': ''
-    }
-  }
+      'post-deploy':
+        'npm install && npm run build && pm2 reload ecosystem.config.js --env production',
+      'pre-setup': '',
+    },
+  },
 };

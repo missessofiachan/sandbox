@@ -22,7 +22,9 @@ class UserRepositorySQLite implements IUserRepository {
   constructor() {
     const dataSource = dbManager.getSQLiteDataSource();
     if (!dataSource || !dataSource.isInitialized) {
-      logger.error('SQLite data source not initialized in UserRepositorySQLite');
+      logger.error(
+        'SQLite data source not initialized in UserRepositorySQLite'
+      );
       throw new Error('SQLite data source not initialized');
     }
     this.repo = dataSource.getRepository(UserSQLite);

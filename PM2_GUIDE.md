@@ -5,6 +5,7 @@ This guide covers how to use PM2 for production-grade process management of the 
 ## Why PM2?
 
 PM2 provides:
+
 - **Process monitoring** and automatic restarts
 - **Load balancing** across multiple CPU cores
 - **Zero-downtime deployments**
@@ -15,6 +16,7 @@ PM2 provides:
 ## Quick Start
 
 ### 1. Production Deployment
+
 ```bash
 # Build the application
 npm run build
@@ -27,6 +29,7 @@ npm run pm2:status
 ```
 
 ### 2. Development Mode
+
 ```bash
 # Start development process with file watching
 npm run pm2:dev
@@ -36,6 +39,7 @@ npm run pm2:logs
 ```
 
 ### 3. Database-Specific Deployments
+
 ```bash
 # Start MongoDB-specific instance
 npm run pm2:mongo
@@ -46,24 +50,25 @@ npm run pm2:mssql
 
 ## Available PM2 Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run pm2:start` | Start production processes (uses all CPU cores) |
-| `npm run pm2:dev` | Start development process with file watching |
-| `npm run pm2:mongo` | Start MongoDB-specific production instance |
-| `npm run pm2:mssql` | Start MSSQL-specific production instance |
-| `npm run pm2:stop` | Stop all processes |
-| `npm run pm2:restart` | Restart all processes |
-| `npm run pm2:reload` | Zero-downtime reload |
-| `npm run pm2:delete` | Delete all processes |
-| `npm run pm2:logs` | View real-time logs |
-| `npm run pm2:status` | View process status |
-| `npm run pm2:monitor` | Open PM2 web monitoring |
-| `npm run pm2:flush` | Clear all logs |
+| Script                | Description                                     |
+| --------------------- | ----------------------------------------------- |
+| `npm run pm2:start`   | Start production processes (uses all CPU cores) |
+| `npm run pm2:dev`     | Start development process with file watching    |
+| `npm run pm2:mongo`   | Start MongoDB-specific production instance      |
+| `npm run pm2:mssql`   | Start MSSQL-specific production instance        |
+| `npm run pm2:stop`    | Stop all processes                              |
+| `npm run pm2:restart` | Restart all processes                           |
+| `npm run pm2:reload`  | Zero-downtime reload                            |
+| `npm run pm2:delete`  | Delete all processes                            |
+| `npm run pm2:logs`    | View real-time logs                             |
+| `npm run pm2:status`  | View process status                             |
+| `npm run pm2:monitor` | Open PM2 web monitoring                         |
+| `npm run pm2:flush`   | Clear all logs                                  |
 
 ## Process Configurations
 
 ### Production (`sandbox-api-prod`)
+
 - **Instances**: Maximum CPU cores
 - **Mode**: Cluster
 - **Memory limit**: 500MB per instance
@@ -71,6 +76,7 @@ npm run pm2:mssql
 - **Auto-restart**: On crashes and memory limits
 
 ### Development (`sandbox-api-dev`)
+
 - **Instances**: 1
 - **Mode**: Fork
 - **File watching**: Enabled
@@ -78,6 +84,7 @@ npm run pm2:mssql
 - **Faster restarts**: For development workflow
 
 ### Database-Specific Instances
+
 - **MongoDB instance**: Port 3001
 - **MSSQL instance**: Port 3002
 - **Independent scaling**: 2 instances each
@@ -86,6 +93,7 @@ npm run pm2:mssql
 ## Advanced PM2 Commands
 
 ### Process Management
+
 ```bash
 # Start specific app
 pm2 start ecosystem.config.js --only sandbox-api-prod
@@ -101,6 +109,7 @@ pm2 scale sandbox-api-prod 4
 ```
 
 ### Monitoring and Logs
+
 ```bash
 # Monitor specific process
 pm2 monit sandbox-api-prod
@@ -116,6 +125,7 @@ pm2 logs sandbox-api-prod > app.log
 ```
 
 ### Health and Performance
+
 ```bash
 # Show detailed process information
 pm2 show sandbox-api-prod
@@ -154,6 +164,7 @@ PM2 is configured to perform health checks on your `/health` endpoint:
 - **Automatic restart**: On health check failures
 
 The health endpoint returns:
+
 - Server uptime
 - Database connection status
 - Memory usage
@@ -162,6 +173,7 @@ The health endpoint returns:
 ## Memory Management
 
 Each process has memory limits:
+
 - **Production**: 500MB per instance
 - **Development**: No limit (for debugging)
 - **Database-specific**: 400MB per instance
@@ -171,12 +183,14 @@ Processes automatically restart when memory limits are exceeded.
 ## Log Management
 
 PM2 logs are stored in the `logs/` directory:
+
 - `pm2-combined.log` - All process output
 - `pm2-out.log` - Standard output
 - `pm2-error.log` - Error output
 - `pm2-dev-*.log` - Development-specific logs
 
 ### Log Rotation
+
 ```bash
 # Install PM2 log rotate module
 pm2 install pm2-logrotate
@@ -206,7 +220,9 @@ pm2 reload ecosystem.config.js --env production
 ## Production Best Practices
 
 ### 1. Environment Variables
+
 Ensure all production environment variables are set:
+
 ```env
 NODE_ENV=production
 PORT=3000
@@ -217,16 +233,19 @@ ENABLE_HELMET=true
 ```
 
 ### 2. System Resources
+
 - Monitor CPU and memory usage
 - Adjust instance count based on load
 - Use `pm2 monit` for real-time monitoring
 
 ### 3. Database Connections
+
 - Monitor connection pool statistics via `/api/database/pool-stats`
 - Use health checks to detect database issues
 - Configure proper connection timeouts
 
 ### 4. Security
+
 - Run PM2 processes with limited user privileges
 - Keep PM2 updated: `npm install -g pm2@latest`
 - Use PM2 keymetrics for advanced monitoring
@@ -236,17 +255,20 @@ ENABLE_HELMET=true
 ### Common Issues
 
 1. **Process won't start**
+
    ```bash
    pm2 logs sandbox-api-prod --lines 50
    ```
 
 2. **High memory usage**
+
    ```bash
    pm2 show sandbox-api-prod
    node scripts/pm2-monitor.js metrics
    ```
 
 3. **Frequent restarts**
+
    ```bash
    pm2 logs sandbox-api-prod --err
    node scripts/pm2-monitor.js health
@@ -258,6 +280,7 @@ ENABLE_HELMET=true
    - Check database server status
 
 ### Recovery Commands
+
 ```bash
 # Kill all PM2 processes
 pm2 kill
@@ -275,6 +298,7 @@ pm2 resurrect
 ## Integration with CI/CD
 
 Example GitHub Actions workflow:
+
 ```yaml
 name: Deploy with PM2
 on:

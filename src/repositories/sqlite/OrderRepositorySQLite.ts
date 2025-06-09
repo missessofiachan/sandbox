@@ -39,7 +39,9 @@ class OrderRepositorySQLite implements IOrderRepository {
   constructor() {
     const dataSource = dbManager.getSQLiteDataSource();
     if (!dataSource || !dataSource.isInitialized) {
-      logger.error('SQLite data source not initialized in OrderRepositorySQLite');
+      logger.error(
+        'SQLite data source not initialized in OrderRepositorySQLite'
+      );
       throw new Error('SQLite data source not initialized');
     }
     this.repo = dataSource.getRepository(OrderSQLite);

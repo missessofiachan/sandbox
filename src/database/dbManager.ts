@@ -204,16 +204,17 @@ class DBManager {
 
     try {
       const dbPath = process.env.SQLITE_DB_PATH || './data/sandbox.db';
-      
+
       this.sqliteDataSource = new DataSource({
         type: 'better-sqlite3',
         database: dbPath,
         entities: [ProductSQLite, UserSQLite, OrderSQLite],
         synchronize: process.env.SQLITE_SYNCHRONIZE === 'true' || true, // Auto-create tables in development
         logging: process.env.SQLITE_LOGGING === 'true' || false,
-        
+
         // Better-sqlite3 specific options
-        verbose: process.env.SQLITE_VERBOSE === 'true' ? console.log : undefined,
+        verbose:
+          process.env.SQLITE_VERBOSE === 'true' ? console.log : undefined,
         fileMustExist: process.env.SQLITE_FILE_MUST_EXIST === 'true' || false,
         timeout: Number(process.env.SQLITE_TIMEOUT) || 5000,
         readonly: process.env.SQLITE_READONLY === 'true' || false,
@@ -365,7 +366,7 @@ class DBManager {
       synchronize?: boolean;
       logging?: boolean;
     };
-    
+
     return {
       isInitialized: this.sqliteDataSource.isInitialized,
       options: {

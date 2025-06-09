@@ -27,14 +27,14 @@ async function insertAdmin(): Promise<void> {
   try {
     await AppDataSource.initialize();
     const userRepo = AppDataSource.getRepository(UserSQLite);
-    
+
     // Check if user already exists
     const exists = await userRepo.findOneBy({ email: adminUser.email });
     if (exists) {
       console.log('Admin user already exists.');
       process.exit(0);
     }
-    
+
     await userRepo.insert(adminUser);
     console.log('Admin user inserted successfully into SQLite database.');
     process.exit(0);

@@ -37,7 +37,10 @@ cleanEnv(process.env, {
   MSSQL_USER: str({ desc: 'MSSQL user', default: '' }),
   MSSQL_PASSWORD: str({ desc: 'MSSQL password', default: '' }),
   MSSQL_DB: str({ desc: 'MSSQL database', default: '' }),
-  SQLITE_DB_PATH: str({ desc: 'SQLite database path', default: './data/sandbox.db' }),
+  SQLITE_DB_PATH: str({
+    desc: 'SQLite database path',
+    default: './data/sandbox.db',
+  }),
   DB_TYPE: str({ choices: ['mongo', 'mssql', 'sqlite'], default: 'mongo' }),
   PORT: num({ default: 3000 }),
   NODE_ENV: str({ default: 'development' }),
@@ -247,10 +250,12 @@ const server = app.listen(PORT, () => {
 // Graceful shutdown handling for PM2
 const gracefulShutdown = async (signal: string) => {
   logger.info(`Received ${signal}. Starting graceful shutdown...`);
-  
+
   // Set a timeout for forced shutdown
   const shutdownTimeout = setTimeout(() => {
-    logger.error('Could not close connections in time, forcefully shutting down');
+    logger.error(
+      'Could not close connections in time, forcefully shutting down'
+    );
     process.exit(1);
   }, 30000); // 30 seconds timeout
 
@@ -258,12 +263,12 @@ const gracefulShutdown = async (signal: string) => {
     // Stop accepting new connections
     server.close(async () => {
       logger.info('HTTP server closed');
-      
+
       try {
         // Close database connections
         await dbManager.closeConnections();
         logger.info('Database connections closed');
-        
+
         clearTimeout(shutdownTimeout);
         logger.info('Graceful shutdown completed');
         process.exit(0);
