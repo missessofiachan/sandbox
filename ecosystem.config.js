@@ -28,13 +28,15 @@ module.exports = {
       max_restarts: 10,
       min_uptime: '10s',
       
-      // Logging
+      // Logging - Let Winston handle most application logging
       log_file: './logs/pm2-combined.log',
       out_file: './logs/pm2-out.log',
       error_file: './logs/pm2-error.log',
       log_type: 'json',
       merge_logs: true,
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      // Disable PM2 logs for console.log (Winston handles this)
+      disable_logs: false,
       
       // Health monitoring
       health_check_http: {
