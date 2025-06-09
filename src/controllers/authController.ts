@@ -3,9 +3,9 @@
 import { Request, Response } from 'express';
 import createToken from '../middleware/createTokenMiddleware';
 import IUserRepository from '../repositories/IUserRepository';
-import { UserRepositoryMongo } from '../repositories/UserRepositoryMongo';
-import UserRepositoryMSSQL from '../repositories/UserRepositoryMSSQL';
-import UserRepositorySQLite from '../repositories/UserRepositorySQLite';
+import { UserRepositoryMongo } from '../repositories/mongo/UserRepositoryMongo';
+import UserRepositoryMSSQL from '../repositories/mssql/UserRepositoryMSSQL';
+import UserRepositorySQLite from '../repositories/sqlite/UserRepositorySQLite';
 import { logger } from '../utils/logger';
 import bcrypt from 'bcrypt';
 import {

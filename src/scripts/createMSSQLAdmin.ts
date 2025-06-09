@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
-import { User } from '../entities/user'; // If 'default', use: import User from '../entities/user'
+import { User } from '../entities/mssql/user'; // If 'default', use: import User from '../entities/user'
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 

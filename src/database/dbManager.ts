@@ -2,9 +2,9 @@
 import mongoose from 'mongoose';
 import { DataSource } from 'typeorm';
 import { logger } from '../utils/logger';
-import Product from '../entities/Product';
-import User from '../entities/user';
-import Order from '../entities/orders';
+import Product from '../entities/mssql/Product';
+import User from '../entities/mssql/user';
+import Order from '../entities/mssql/orders';
 // SQLite entities
 import ProductSQLite from '../entities/sqlite/product';
 import UserSQLite from '../entities/sqlite/user';

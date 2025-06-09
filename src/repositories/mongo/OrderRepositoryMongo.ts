@@ -1,6 +1,6 @@
-import Order from '../models/Order';
-import IOrderRepository from './IOrderRepository';
-import { IOrder } from '../types';
+import Order from '../../models/Order';
+import IOrderRepository from '../IOrderRepository';
+import { IOrder } from '../../types';
 
 export class OrderRepositoryMongo implements IOrderRepository {
   async create(data: IOrder) {

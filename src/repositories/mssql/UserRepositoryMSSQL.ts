@@ -1,9 +1,9 @@
 import { Repository } from 'typeorm';
-import User from '../entities/user';
-import IUserRepository from './IUserRepository';
-import { dbManager } from '../database/dbManager';
-import { logger } from '../utils/logger';
-import { IUser } from '../types';
+import User from '../../entities/mssql/user';
+import IUserRepository from '../IUserRepository';
+import { dbManager } from '../../database/dbManager';
+import { logger } from '../../utils/logger';
+import { IUser } from '../../types';
 
 // Helper to map TypeORM User entity to IUser interface
 function mapUserEntityToIUser(user: User): IUser {

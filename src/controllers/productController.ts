@@ -1,9 +1,9 @@
 // Controller for Product resource
 import { Request, Response } from 'express';
 import IProductRepository from '../repositories/IProductRepository';
-import { ProductRepositoryMongo } from '../repositories/ProductRepositoryMongo';
-import { ProductRepositoryMSSQL } from '../repositories/ProductRepositoryMSSQL';
-import { ProductRepositorySQLite } from '../repositories/ProductRepositorySQLite';
+import { ProductRepositoryMongo } from '../repositories/mongo/ProductRepositoryMongo';
+import { ProductRepositoryMSSQL } from '../repositories/mssql/ProductRepositoryMSSQL';
+import { ProductRepositorySQLite } from '../repositories/sqlite/ProductRepositorySQLite';
 import { invalidateCache } from '../middleware/cacheMiddleware';
 import {
   asyncHandler,

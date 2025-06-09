@@ -1,6 +1,6 @@
-import Product from '../models/Product';
-import IProductRepository from './IProductRepository';
-import { IProduct } from '../types';
+import Product from '../../models/Product';
+import IProductRepository from '../IProductRepository';
+import { IProduct } from '../../types';
 
 export class ProductRepositoryMongo implements IProductRepository {
   async create(data: IProduct) {

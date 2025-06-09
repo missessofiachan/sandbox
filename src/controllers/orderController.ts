@@ -1,9 +1,9 @@
 // Controller for Order resource
 import { Request, Response } from 'express';
 import IOrderRepository from '../repositories/IOrderRepository';
-import { OrderRepositoryMongo } from '../repositories/OrderRepositoryMongo';
-import OrderRepositoryMSSQL from '../repositories/OrderRepositoryMSSQL';
-import OrderRepositorySQLite from '../repositories/OrderRepositorySQLite';
+import { OrderRepositoryMongo } from '../repositories/mongo/OrderRepositoryMongo';
+import OrderRepositoryMSSQL from '../repositories/mssql/OrderRepositoryMSSQL';
+import OrderRepositorySQLite from '../repositories/sqlite/OrderRepositorySQLite';
 import { logger } from '../utils/logger';
 import {
   asyncHandler,

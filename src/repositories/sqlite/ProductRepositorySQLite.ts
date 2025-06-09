@@ -1,9 +1,9 @@
-import ProductSQLite from '../entities/sqlite/product';
+import ProductSQLite from '../../entities/sqlite/product';
 import { Repository } from 'typeorm';
-import IProductRepository from './IProductRepository';
-import { dbManager } from '../database/dbManager';
-import { logger } from '../utils/logger';
-import { IProduct } from '../types';
+import IProductRepository from '../IProductRepository';
+import { dbManager } from '../../database/dbManager';
+import { logger } from '../../utils/logger';
+import { IProduct } from '../../types';
 
 // Helper to map TypeORM ProductSQLite entity to IProduct interface
 function mapProductEntityToIProduct(product: ProductSQLite): IProduct {

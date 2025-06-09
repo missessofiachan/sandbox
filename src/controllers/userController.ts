@@ -7,9 +7,9 @@ import {
   BadRequestError,
 } from '../middleware/errorHandlerMiddleware';
 import IUserRepository from '../repositories/IUserRepository';
-import { UserRepositoryMongo } from '../repositories/UserRepositoryMongo';
-import UserRepositoryMSSQL from '../repositories/UserRepositoryMSSQL';
-import UserRepositorySQLite from '../repositories/UserRepositorySQLite';
+import { UserRepositoryMongo } from '../repositories/mongo/UserRepositoryMongo';
+import UserRepositoryMSSQL from '../repositories/mssql/UserRepositoryMSSQL';
+import UserRepositorySQLite from '../repositories/sqlite/UserRepositorySQLite';
 
 // Add import for process (for ESM/TypeScript global)
 import process from 'process';

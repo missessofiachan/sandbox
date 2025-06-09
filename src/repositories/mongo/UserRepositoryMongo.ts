@@ -1,6 +1,6 @@
-import User from '../models/User';
-import IUserRepository from './IUserRepository';
-import { IUser } from '../types';
+import User from '../../models/User';
+import IUserRepository from '../IUserRepository';
+import { IUser } from '../../types';
 
 export class UserRepositoryMongo implements IUserRepository {
   async create(data: IUser) {

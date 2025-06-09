@@ -1,9 +1,9 @@
 import { Repository } from 'typeorm';
-import UserSQLite from '../entities/sqlite/user';
-import IUserRepository from './IUserRepository';
-import { dbManager } from '../database/dbManager';
-import { logger } from '../utils/logger';
-import { IUser } from '../types';
+import UserSQLite from '../../entities/sqlite/user';
+import IUserRepository from '../IUserRepository';
+import { dbManager } from '../../database/dbManager';
+import { logger } from '../../utils/logger';
+import { IUser } from '../../types';
 
 // Helper to map TypeORM UserSQLite entity to IUser interface
 function mapUserEntityToIUser(user: UserSQLite): IUser {

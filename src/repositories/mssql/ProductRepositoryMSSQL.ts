@@ -1,9 +1,9 @@
-import Product from '../entities/Product';
+import Product from '../../entities/mssql/Product';
 import { Repository } from 'typeorm';
-import IProductRepository from './IProductRepository';
-import { dbManager } from '../database/dbManager';
-import { logger } from '../utils/logger';
-import { IProduct } from '../types';
+import IProductRepository from '../IProductRepository';
+import { dbManager } from '../../database/dbManager';
+import { logger } from '../../utils/logger';
+import { IProduct } from '../../types';
 
 // Helper to map TypeORM Product entity to IProduct interface
 function mapProductEntityToIProduct(product: Product): IProduct {
