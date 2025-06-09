@@ -5,6 +5,7 @@ import createToken from '../middleware/createTokenMiddleware';
 import IUserRepository from '../repositories/IUserRepository';
 import { UserRepositoryMongo } from '../repositories/UserRepositoryMongo';
 import UserRepositoryMSSQL from '../repositories/UserRepositoryMSSQL';
+import UserRepositorySQLite from '../repositories/UserRepositorySQLite';
 import { logger } from '../utils/logger';
 import bcrypt from 'bcrypt';
 import {
@@ -49,6 +50,14 @@ function getAuthRepo(): IUserRepository {
       return new UserRepositoryMSSQL();
     } catch (err) {
       logger.error(`MSSQL auth repository init failed: ${err}`);
+      logger.info('Falling back to MongoDB auth repository');
+      return new UserRepositoryMongo();
+    }
+  } else if (process.env.DB_TYPE === 'sqlite') {
+    try {
+      return new UserRepositorySQLite();
+    } catch (err) {
+      logger.error(`SQLite auth repository init failed: ${err}`);
       logger.info('Falling back to MongoDB auth repository');
       return new UserRepositoryMongo();
     }

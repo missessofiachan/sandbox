@@ -5,6 +5,7 @@
 // Importing required modules
 import express, { Application } from 'express';
 import path from 'path';
+import { setTimeout, clearTimeout } from 'timers';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import pageRoutes from './routes/pageRoutes';
@@ -36,7 +37,8 @@ cleanEnv(process.env, {
   MSSQL_USER: str({ desc: 'MSSQL user', default: '' }),
   MSSQL_PASSWORD: str({ desc: 'MSSQL password', default: '' }),
   MSSQL_DB: str({ desc: 'MSSQL database', default: '' }),
-  DB_TYPE: str({ choices: ['mongo', 'mssql'], default: 'mongo' }),
+  SQLITE_DB_PATH: str({ desc: 'SQLite database path', default: './data/sandbox.db' }),
+  DB_TYPE: str({ choices: ['mongo', 'mssql', 'sqlite'], default: 'mongo' }),
   PORT: num({ default: 3000 }),
   NODE_ENV: str({ default: 'development' }),
   ENABLE_RATE_LIMIT: bool({ default: true }),
@@ -138,6 +140,10 @@ interface DatabaseHealth {
     connected: boolean;
     stats: unknown;
   };
+  sqlite: {
+    connected: boolean;
+    stats: unknown;
+  };
 }
 
 app.get('/health', async (req, res) => {
@@ -154,6 +160,8 @@ app.get('/health', async (req, res) => {
       dbStatus = databaseHealth.mongodb.connected
         ? 'connected'
         : 'disconnected';
+    } else if (dbType === 'sqlite') {
+      dbStatus = databaseHealth.sqlite.connected ? 'connected' : 'disconnected';
     } else {
       dbStatus = databaseHealth.mssql.connected ? 'connected' : 'disconnected';
     }
@@ -167,6 +175,7 @@ app.get('/health', async (req, res) => {
       connectionPools: {
         mongodb: databaseHealth.mongodb.stats,
         mssql: databaseHealth.mssql.stats,
+        sqlite: databaseHealth.sqlite.stats,
       },
       memory: {
         used:

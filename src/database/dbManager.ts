@@ -5,6 +5,10 @@ import { logger } from '../utils/logger';
 import Product from '../entities/Product';
 import User from '../entities/user';
 import Order from '../entities/orders';
+// SQLite entities
+import ProductSQLite from '../entities/sqlite/product';
+import UserSQLite from '../entities/sqlite/user';
+import OrderSQLite from '../entities/sqlite/order';
 import process from 'process';
 
 // Class to manage database connections
@@ -13,6 +17,8 @@ class DBManager {
   private mongoConnected: boolean = false;
   private mssqlConnected: boolean = false;
   private mssqlDataSource: DataSource | null = null;
+  private sqliteConnected: boolean = false;
+  private sqliteDataSource: DataSource | null = null;
 
   // Singleton pattern
   public static getInstance(): DBManager {
@@ -192,9 +198,53 @@ class DBManager {
     }
   }
 
+  // Connect to SQLite with optimized settings
+  public async connectSQLite(): Promise<boolean> {
+    if (this.sqliteConnected && this.sqliteDataSource) return true;
+
+    try {
+      const dbPath = process.env.SQLITE_DB_PATH || './data/sandbox.db';
+      
+      this.sqliteDataSource = new DataSource({
+        type: 'better-sqlite3',
+        database: dbPath,
+        entities: [ProductSQLite, UserSQLite, OrderSQLite],
+        synchronize: process.env.SQLITE_SYNCHRONIZE === 'true' || true, // Auto-create tables in development
+        logging: process.env.SQLITE_LOGGING === 'true' || false,
+        
+        // Better-sqlite3 specific options
+        verbose: process.env.SQLITE_VERBOSE === 'true' ? console.log : undefined,
+        fileMustExist: process.env.SQLITE_FILE_MUST_EXIST === 'true' || false,
+        timeout: Number(process.env.SQLITE_TIMEOUT) || 5000,
+        readonly: process.env.SQLITE_READONLY === 'true' || false,
+      });
+
+      await this.sqliteDataSource.initialize();
+      this.sqliteConnected = true;
+
+      // Log connection configuration
+      logger.info('Connected to SQLite database', {
+        database: dbPath,
+        synchronize: process.env.SQLITE_SYNCHRONIZE === 'true' || true,
+        logging: process.env.SQLITE_LOGGING === 'true' || false,
+      });
+
+      return true;
+    } catch (err) {
+      logger.error(`SQLite connection error: ${err}`);
+      this.sqliteDataSource = null;
+      return false;
+    }
+  }
+
   // Get MSSQL data source
   public getMSSQLDataSource(): DataSource | null {
     return this.mssqlDataSource;
+  }
+
+  // Get SQLite data source
+  public getSQLiteDataSource(): DataSource | null {
+    return this.sqliteDataSource;
   }
 
   // Check MongoDB connection status
@@ -211,12 +261,23 @@ class DBManager {
     );
   }
 
+  // Check SQLite connection status
+  public isSQLiteConnected(): boolean {
+    return (
+      this.sqliteConnected &&
+      this.sqliteDataSource !== null &&
+      this.sqliteDataSource.isInitialized
+    );
+  }
+
   // Connect to the appropriate database based on DB_TYPE
   public async connect(): Promise<boolean> {
     const dbType = process.env.DB_TYPE || 'mongo';
 
     if (dbType === 'mssql') {
       return this.connectMSSQL();
+    } else if (dbType === 'sqlite') {
+      return this.connectSQLite();
     } else {
       return this.connectMongo();
     }
@@ -234,6 +295,13 @@ class DBManager {
       this.mssqlConnected = false;
       this.mssqlDataSource = null;
       logger.info('Disconnected from MSSQL');
+    }
+
+    if (this.sqliteConnected && this.sqliteDataSource) {
+      await this.sqliteDataSource.destroy();
+      this.sqliteConnected = false;
+      this.sqliteDataSource = null;
+      logger.info('Disconnected from SQLite');
     }
   }
   // Get MongoDB connection pool statistics
@@ -285,6 +353,30 @@ class DBManager {
       poolConfiguration: options.extra?.pool || 'Pool config unavailable',
     };
   }
+
+  // Get SQLite connection statistics
+  public getSQLitePoolStats(): unknown {
+    if (!this.sqliteConnected || !this.sqliteDataSource) {
+      return null;
+    }
+
+    const options = this.sqliteDataSource.options as {
+      database?: string;
+      synchronize?: boolean;
+      logging?: boolean;
+    };
+    
+    return {
+      isInitialized: this.sqliteDataSource.isInitialized,
+      options: {
+        database: options.database || 'unknown',
+        synchronize: options.synchronize || false,
+        logging: options.logging || false,
+      },
+      type: 'better-sqlite3',
+      connectionType: 'file-based',
+    };
+  }
   // Get comprehensive database health information
   public async getDatabaseHealth(): Promise<unknown> {
     // Use a specific type for health
@@ -298,6 +390,7 @@ class DBManager {
       timestamp: string;
       mongodb: HealthDbStats;
       mssql: HealthDbStats;
+      sqlite: HealthDbStats;
     } = {
       timestamp: new Date().toISOString(),
       mongodb: {
@@ -307,6 +400,10 @@ class DBManager {
       mssql: {
         connected: this.isMSSQLConnected(),
         stats: this.getMSSQLPoolStats(),
+      },
+      sqlite: {
+        connected: this.isSQLiteConnected(),
+        stats: this.getSQLitePoolStats(),
       },
     };
 
@@ -328,6 +425,16 @@ class DBManager {
       } catch (err) {
         health.mssql.ping = 'failed';
         health.mssql.pingError = (err as Error).message;
+      }
+    }
+
+    if (this.isSQLiteConnected() && this.sqliteDataSource) {
+      try {
+        await this.sqliteDataSource.query('SELECT 1');
+        health.sqlite.ping = 'success';
+      } catch (err) {
+        health.sqlite.ping = 'failed';
+        health.sqlite.pingError = (err as Error).message;
       }
     }
 

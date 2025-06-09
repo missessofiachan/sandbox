@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import IOrderRepository from '../repositories/IOrderRepository';
 import { OrderRepositoryMongo } from '../repositories/OrderRepositoryMongo';
 import OrderRepositoryMSSQL from '../repositories/OrderRepositoryMSSQL';
+import OrderRepositorySQLite from '../repositories/OrderRepositorySQLite';
 import { logger } from '../utils/logger';
 import {
   asyncHandler,
@@ -18,6 +19,14 @@ function getOrderRepo(): IOrderRepository {
       return new OrderRepositoryMSSQL();
     } catch (err) {
       logger.error(`MSSQL order repository initialization failed: ${err}`);
+      logger.info('Falling back to MongoDB order repository');
+      return new OrderRepositoryMongo();
+    }
+  } else if (process.env.DB_TYPE === 'sqlite') {
+    try {
+      return new OrderRepositorySQLite();
+    } catch (err) {
+      logger.error(`SQLite order repository initialization failed: ${err}`);
       logger.info('Falling back to MongoDB order repository');
       return new OrderRepositoryMongo();
     }

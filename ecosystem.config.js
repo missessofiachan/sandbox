@@ -188,6 +188,80 @@ module.exports = {
         timeout: 5000,
         interval: 30000
       }
+    },
+    
+    // SQLite-specific production app
+    {
+      name: 'sandbox-api-sqlite',
+      script: './dist/server.js',
+      instances: 1, // SQLite works best with single instance
+      exec_mode: 'fork',
+      env: {
+        NODE_ENV: 'production',
+        PORT: 3003,
+        DB_TYPE: 'sqlite',
+        SQLITE_DB_PATH: './data/sandbox.db',
+        ENABLE_RATE_LIMIT: 'true',
+        ENABLE_CACHE: 'true',
+        ENABLE_HELMET: 'true'
+      },
+      autorestart: true,
+      max_memory_restart: '300M',
+      
+      // Health check specific to SQLite
+      health_check_http: {
+        url: 'http://localhost:3003/health',
+        method: 'GET',
+        timeout: 5000,
+        interval: 30000
+      },
+      
+      // SQLite-specific logging
+      log_file: './logs/pm2-sqlite-combined.log',
+      out_file: './logs/pm2-sqlite-out.log',
+      error_file: './logs/pm2-sqlite-error.log'
+    },
+    
+    // SQLite development app
+    {
+      name: 'sandbox-api-sqlite-dev',
+      script: './dist/server.js',
+      instances: 1,
+      exec_mode: 'fork',
+      env: {
+        NODE_ENV: 'development',
+        PORT: 3004,
+        DB_TYPE: 'sqlite',
+        SQLITE_DB_PATH: './data/sandbox-dev.db',
+        ENABLE_RATE_LIMIT: 'false',
+        ENABLE_CACHE: 'true',
+        ENABLE_HELMET: 'false',
+        LOG_LEVEL: 'debug'
+      },
+      
+      // Development-specific settings
+      autorestart: true,
+      watch: ['./dist'],
+      watch_delay: 1000,
+      ignore_watch: [
+        'node_modules',
+        'logs',
+        'src',
+        'tests',
+        '*.log',
+        '.git',
+        'data/*.db'
+      ],
+      
+      // Faster restarts for development
+      restart_delay: 1000,
+      max_restarts: 15,
+      min_uptime: '3s',
+      
+      // Development logging
+      log_file: './logs/pm2-sqlite-dev-combined.log',
+      out_file: './logs/pm2-sqlite-dev-out.log',
+      error_file: './logs/pm2-sqlite-dev-error.log'
     }
   ],
   

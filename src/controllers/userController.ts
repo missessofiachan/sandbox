@@ -9,6 +9,7 @@ import {
 import IUserRepository from '../repositories/IUserRepository';
 import { UserRepositoryMongo } from '../repositories/UserRepositoryMongo';
 import UserRepositoryMSSQL from '../repositories/UserRepositoryMSSQL';
+import UserRepositorySQLite from '../repositories/UserRepositorySQLite';
 
 // Add import for process (for ESM/TypeScript global)
 import process from 'process';
@@ -22,6 +23,14 @@ function getUserRepo(): IUserRepository {
       return new UserRepositoryMSSQL();
     } catch (err) {
       logger.error(`MSSQL user repository initialization failed: ${err}`);
+      logger.info('Falling back to MongoDB user repository');
+      return new UserRepositoryMongo();
+    }
+  } else if (process.env.DB_TYPE === 'sqlite') {
+    try {
+      return new UserRepositorySQLite();
+    } catch (err) {
+      logger.error(`SQLite user repository initialization failed: ${err}`);
       logger.info('Falling back to MongoDB user repository');
       return new UserRepositoryMongo();
     }

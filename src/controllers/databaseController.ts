@@ -55,6 +55,20 @@ export const getPoolStatistics = asyncHandler(
             Number(process.env.MSSQL_REQUEST_TIMEOUT_MS) || 15000,
         },
       },
+      sqlite: {
+        enabled:
+          process.env.DB_TYPE === 'sqlite' ||
+          process.env.ENABLE_SQLITE_MONITORING === 'true',
+        connected: databaseHealth.sqlite.connected,
+        ping: databaseHealth.sqlite.ping,
+        connectionPool: databaseHealth.sqlite.stats,
+        configuration: {
+          dbPath: process.env.SQLITE_DB_PATH || './data/sandbox.db',
+          synchronize: process.env.SQLITE_SYNCHRONIZE === 'true' || true,
+          logging: process.env.SQLITE_LOGGING === 'true' || false,
+          timeout: Number(process.env.SQLITE_TIMEOUT) || 5000,
+        },
+      },
       recommendations: generatePoolRecommendations(databaseHealth),
     };
 
@@ -105,6 +119,11 @@ interface DatabaseHealth {
     ping?: string;
   };
   mssql: {
+    connected: boolean;
+    stats: unknown;
+    ping?: string;
+  };
+  sqlite: {
     connected: boolean;
     stats: unknown;
     ping?: string;

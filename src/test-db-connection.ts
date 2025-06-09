@@ -34,6 +34,20 @@ async function testMSSQL() {
   }
 }
 
+async function testSQLite() {
+  logger.info('Testing SQLite connection...');
+  try {
+    const success = await dbManager.connectSQLite();
+    if (success) {
+      logger.info('✓ SQLite connection successful');
+    } else {
+      logger.error('✗ SQLite connection failed');
+    }
+  } catch (err) {
+    logger.error(`✗ SQLite connection error: ${err}`);
+  }
+}
+
 async function testMain() {
   logger.info('=== Database Connection Test ===');
 
@@ -42,6 +56,9 @@ async function testMain() {
 
   // Test MSSQL
   await testMSSQL();
+
+  // Test SQLite
+  await testSQLite();
 
   // Close connections
   await dbManager.closeConnections();

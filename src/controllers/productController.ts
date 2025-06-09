@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import IProductRepository from '../repositories/IProductRepository';
 import { ProductRepositoryMongo } from '../repositories/ProductRepositoryMongo';
 import { ProductRepositoryMSSQL } from '../repositories/ProductRepositoryMSSQL';
+import { ProductRepositorySQLite } from '../repositories/ProductRepositorySQLite';
 import { invalidateCache } from '../middleware/cacheMiddleware';
 import {
   asyncHandler,
@@ -18,6 +19,14 @@ function getProductRepo(): IProductRepository {
       return new ProductRepositoryMSSQL();
     } catch (err) {
       logger.error(`MSSQL product repository initialization failed: ${err}`);
+      logger.info('Falling back to MongoDB product repository');
+      return new ProductRepositoryMongo();
+    }
+  } else if (process.env.DB_TYPE === 'sqlite') {
+    try {
+      return new ProductRepositorySQLite();
+    } catch (err) {
+      logger.error(`SQLite product repository initialization failed: ${err}`);
       logger.info('Falling back to MongoDB product repository');
       return new ProductRepositoryMongo();
     }
