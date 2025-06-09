@@ -228,10 +228,69 @@ if (isFeatureEnabled('ENABLE_NEW_FEATURE')) {
 
 // Starting the server
 const PORT: number = Number(process.env.PORT) || 3000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   logger.info(`Server is running on http://localhost:${PORT}`);
   logger.info(`Environment: ${process.env.NODE_ENV}`);
   logger.info(`Database type: ${process.env.DB_TYPE}`);
+  logger.info(`Process ID: ${process.pid}`);
 });
+
+// Graceful shutdown handling for PM2
+const gracefulShutdown = async (signal: string) => {
+  logger.info(`Received ${signal}. Starting graceful shutdown...`);
+  
+  // Set a timeout for forced shutdown
+  const shutdownTimeout = setTimeout(() => {
+    logger.error('Could not close connections in time, forcefully shutting down');
+    process.exit(1);
+  }, 30000); // 30 seconds timeout
+
+  try {
+    // Stop accepting new connections
+    server.close(async () => {
+      logger.info('HTTP server closed');
+      
+      try {
+        // Close database connections
+        await dbManager.closeConnections();
+        logger.info('Database connections closed');
+        
+        clearTimeout(shutdownTimeout);
+        logger.info('Graceful shutdown completed');
+        process.exit(0);
+      } catch (error) {
+        logger.error('Error during database shutdown:', error);
+        clearTimeout(shutdownTimeout);
+        process.exit(1);
+      }
+    });
+  } catch (error) {
+    logger.error('Error during graceful shutdown:', error);
+    clearTimeout(shutdownTimeout);
+    process.exit(1);
+  }
+};
+
+// Handle various shutdown signals
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGUSR2', () => gracefulShutdown('SIGUSR2')); // PM2 reload signal
+
+// Handle uncaught exceptions and promise rejections
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught Exception:', error);
+  gracefulShutdown('uncaughtException');
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  gracefulShutdown('unhandledRejection');
+});
+
+// PM2 ready signal
+if (process.send) {
+  process.send('ready');
+  logger.info('PM2 ready signal sent');
+}
 
 export default app;

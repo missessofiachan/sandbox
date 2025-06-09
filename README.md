@@ -138,6 +138,35 @@ For development with hot reload:
 npm run dev
 ```
 
+### Production Deployment with PM2
+
+For production-grade process management, use PM2:
+
+```sh
+# Build and start with PM2 (production)
+npm run build
+npm run pm2:start
+
+# Development with file watching
+npm run pm2:dev
+
+# Check process status
+npm run pm2:status
+
+# View logs
+npm run pm2:logs
+```
+
+PM2 provides:
+- **Process monitoring** and automatic restarts
+- **Load balancing** across CPU cores  
+- **Zero-downtime deployments**
+- **Memory monitoring** with restart on leaks
+- **Health checks** every 30 seconds
+- **Advanced logging** and metrics
+
+For detailed PM2 usage, see [PM2_GUIDE.md](./PM2_GUIDE.md).
+
 ### Create Admin User
 
 ```sh
