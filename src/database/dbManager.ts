@@ -2,6 +2,7 @@
 import mongoose from 'mongoose';
 import { DataSource } from 'typeorm';
 import { logger } from '../utils/logger';
+// ms SQL entities
 import Product from '../entities/mssql/Product';
 import User from '../entities/mssql/user';
 import Order from '../entities/mssql/orders';
@@ -9,6 +10,7 @@ import Order from '../entities/mssql/orders';
 import ProductSQLite from '../entities/sqlite/product';
 import UserSQLite from '../entities/sqlite/user';
 import OrderSQLite from '../entities/sqlite/order';
+
 import process from 'process';
 
 // Class to manage database connections
