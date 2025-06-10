@@ -843,6 +843,114 @@
         }
       ],
       "description": "ADMIN ONLY: Requires admin JWT."
+    },
+    {
+      "name": "User Login (POST)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"user123\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/login",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "auth", "login"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('User login successful and token stored', function () {",
+              "  pm.expect(pm.response.code).to.eql(200);",
+              "  const json = pm.response.json();",
+              "  pm.expect(json).to.have.property('token');",
+              "  pm.collectionVariables.set('user_token', json.token);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "description": "USER: Obtain JWT for user-protected endpoints."
+    },
+    {
+      "name": "User Logout (POST)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-auth-token",
+            "value": "{{user_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/auth/logout",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "auth", "logout"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('User logout successful', function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+              "  pm.collectionVariables.unset('user_token');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "description": "USER: Logout endpoint. Clears user_token."
+    },
+    {
+      "name": "Admin Logout (POST)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "x-auth-token",
+            "value": "{{admin_token}}"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/auth/logout",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "auth", "logout"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Admin logout successful', function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+              "  pm.collectionVariables.unset('admin_token');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "description": "ADMIN: Logout endpoint. Clears admin_token."
     }
   ],
   "variable": [
